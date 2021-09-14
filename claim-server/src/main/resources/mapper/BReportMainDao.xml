@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- ============================================================== -->
+<!-- ================可直接使用Base配置文件中定义的节点！================ -->
+<!-- ============================================================== -->
+<mapper namespace="com.claim.server.report.dao.BReportMainDao">
+    <select id="selectByReportNo" parameterType="string" resultType="com.claim.server.report.po.BReportMain">
+        SELECT
+          ReportNo,ReportTime,CaseFlag,PolicyNo,InsuranceName,InsuranceCode,InsuredCode,InsuredName,
+          PolicyType,ComCode,ComName,ReportLoss,DamageTime,
+          getDictMapper('damage',DamageCode) DamageCode,
+          getDictMapper('province',Province) Province,
+          getDictMapper('city',City) City,
+          getDictMapper('countyCode',CountyCode) CountyCode,
+          DamageAddress,
+          ReportorName,ReportorPhone,LinkerName,LinkerPhone,Remark,CreateTime,UpdateTime
+        FROM
+          b_report_main
+        WHERE
+          ReportNo = #{reportNo}
+    </select>
+
+    <select id="selectCaseFlag" parameterType="string" resultType="string">
+        SELECT CaseFlag FROM b_report_main WHERE ReportNo = #{reportNo}
+    </select>
+</mapper>

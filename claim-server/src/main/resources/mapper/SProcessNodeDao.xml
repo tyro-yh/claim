@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- ============================================================== -->
+<!-- ================可直接使用Base配置文件中定义的节点！================ -->
+<!-- ============================================================== -->
+<mapper namespace="com.claim.server.process.dao.SProcessNodeDao">
+    <delete id="deleteByProcessId" parameterType="int">
+        DELETE FROM s_process_node WHERE ProcessId = #{processId}
+    </delete>
+
+    <select id="selectByProcessId" parameterType="int" resultType="com.claim.server.process.po.SProcessNode">
+        SELECT * FROM s_process_node WHERE ProcessId = #{processId} AND NodeId != '0' ORDER BY NodeId ASC
+    </select>
+
+    <select id="selectByProcessIdAndNodeId" parameterType="map" resultType="com.claim.server.process.po.SProcessNode">
+        SELECT * FROM s_process_node WHERE ProcessId = #{processId} AND NodeId = #{nodeId}
+    </select>
+</mapper>

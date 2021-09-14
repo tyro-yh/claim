@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- ============================================================== -->
+<!-- ================可直接使用Base配置文件中定义的节点！================ -->
+<!-- ============================================================== -->
+<mapper namespace="com.claim.server.workflow.dao.BWorkflowDao">
+    <select id="initTaskStatus" resultType="map" parameterType="string">
+        SELECT
+          (SELECT COUNT(DISTINCT ReportNo) FROM b_workflow WHERE `Handler` = #{userCode} AND TaskStatus = '0') AS todo,
+          (SELECT COUNT(DISTINCT ReportNo) FROM b_workflow WHERE `Handler` = #{userCode} AND TaskStatus = '1') AS doing,
+          (SELECT COUNT(DISTINCT ReportNo) FROM b_workflow WHERE `Handler` = #{userCode} AND TaskStatus = '2') AS done
+        FROM DUAL
+    </select>
+
+    <select id="insuranceScale" resultType="map">
+        SELECT COUNT(DISTINCT ReportNo)/(select COUNT(DISTINCT ReportNo) FROM b_workflow) AS cnum,
+        (SELECT DataName FROM s_common WHERE DataTypeCode = 'Insurance' AND DataCode = Insurance) AS Insurance
+        FROM b_workflow GROUP BY Insurance ORDER BY cnum DESC LIMIT 4
+    </select>
+
+    <select id="selectCaseMain" parameterType="string" resultType="com.claim.server.workflow.po.BWorkflow">
+        SELECT * FROM b_workflow WHERE ReportNo = #{reportNo} AND TaskType = 'CaseMain' AND TaskStatus != '2'
+        ORDER BY TaskId DESC LIMIT 1
+    </select>
+
+    <select id="selectNodeByReportNo" parameterType="string" resultType="com.claim.server.workflow.po.BWorkflow">
+        SELECT * FROM b_workflow WHERE ReportNo = #{reportNo} AND TaskType = #{taskType} AND BusinessKey = #{businessKey}
+    </select>
+</mapper>

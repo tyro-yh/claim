@@ -1,0 +1,405 @@
+<template>
+	<section>
+		<el-card shadow="hover">
+			<!--工具条-->
+			<el-col :span="24" class="toolbar" style="background: #fff;padding-bottom: 0px;">
+				<el-form :inline="true" :model="filters">
+					<el-form-item label="保单号">
+						<el-input v-model="filters.policyNo" placeholder="请输入保单号"></el-input>
+					</el-form-item>
+					<el-form-item label="投保人证件">
+						<el-input v-model="filters.appliCode"></el-input>
+					</el-form-item>
+					<el-form-item label="被保险人证件">
+						<el-input v-model="filters.insuredCode"></el-input>
+					</el-form-item>
+					<el-form-item>
+						<el-button type="primary" v-on:click="getPolicy">查询</el-button>
+					</el-form-item>
+				</el-form>
+			</el-col>
+			<!--列表-->
+			<el-table :data="tableData" highlight-current-row v-loading="listLoading" style="width: 100%;" border :cell-style="cellClass" :header-cell-style="headCellClass">
+				<el-table-column prop="policyNo" label="保单号" min-width="120" sortable>
+				</el-table-column>
+				<el-table-column prop="insuranceName" label="险类" min-width="120">
+				</el-table-column>
+				<el-table-column prop="insuredName" label="被保险人名称" min-width="100">
+				</el-table-column>
+				<el-table-column prop="insuredCode" label="被保险人证件" min-width="120">
+				</el-table-column>
+				<el-table-column prop="startTime" label="起保日期" min-width="120" :formatter="formatStartTime">
+				</el-table-column>
+				<el-table-column prop="endTime" label="终保日期" min-width="120" :formatter="formatEndTime">
+				</el-table-column>
+				<el-table-column prop="policyStatus" label="保单状态" width="80" :formatter="formatStatus">
+				</el-table-column>
+				<el-table-column label="操作" width="100">
+					<template slot-scope="scope">
+						<el-button size="small" v-if="scope.row.policyStatus == '1'" @click="selectPolicy(scope.$index, scope.row)">选择</el-button>
+					</template>
+				</el-table-column>
+			</el-table>
+			<el-col :span="24" class="toolbar" style="background: #fff;">
+				<el-pagination layout="total, sizes, prev, pager, next, jumper" @size-change="handleSizeChange" @current-change="handleCurrentChange" :page-size="5" :page-sizes="[5, 10, 20]" :total="total" style="float:right;">
+				</el-pagination>
+			</el-col>
+		</el-card>
+		
+		<el-card shadow="hover" style="margin-top: 20px;margin-bottom: 20px;" v-show="showReport">
+			<div slot="header" class="clearfix">
+			    <span style="font-size: 22px;">报案基本信息</span>
+				<!-- <div style="float: right; padding: 3px 0">
+					<el-button  type="text">提交</el-button>
+				</div> -->
+			  </div>
+			<el-form ref="form" :model="form" style="margin-left:20%;width:60%;min-width:600px;">
+				<el-form-item>
+					<el-col :span="3">报案号</el-col>
+					<el-col :span="9">
+						<el-input v-model="form.reportNo" disabled placeholder="提交自动生成"></el-input>
+					</el-col>
+					<el-col :span="3">报案时间</el-col>
+					<el-col :span="9">
+						<el-input v-model="form.reportTime" disabled placeholder="提交自动生成"></el-input>
+					</el-col>
+				</el-form-item>
+				<el-form-item>
+					<el-col :span="3">保单号</el-col>
+					<el-col :span="9">
+						<el-input v-model="form.policyNo" disabled></el-input>
+					</el-col>
+					<el-col :span="3">险种</el-col>
+					<el-col :span="9">
+						<el-input v-model="form.insuranceName" disabled></el-input>
+					</el-col>
+				</el-form-item>
+				<el-form-item>
+					<el-col :span="3">被保险人名称</el-col>
+					<el-col :span="9">
+						<el-input v-model="form.insuredName" disabled></el-input>
+					</el-col>
+					<el-col :span="3">被保险人证件</el-col>
+					<el-col :span="9">
+						<el-input v-model="form.insuredCode" disabled></el-input>
+					</el-col>
+				</el-form-item>
+				<el-form-item>
+					<el-col :span="3">归属机构</el-col>
+					<el-col :span="9">
+						<el-input v-model="form.comName" disabled></el-input>
+					</el-col>
+					<el-col :span="3">保单类型</el-col>
+					<el-col :span="9">
+						<el-radio v-model="form.policyType" disabled label="01">个人</el-radio>
+						<el-radio v-model="form.policyType" disabled label="02">团体</el-radio>
+					</el-col>
+				</el-form-item>
+				<el-form-item>
+					<el-col :span="3">出险原因</el-col>
+					<el-col :span="9" style="display: flex;">
+						<el-select v-model="form.damageCode" placeholder="请选择出险原因">
+							<el-option
+							  v-for="item in damageOptions"
+							  :key="item.value"
+							  :label="item.label"
+							  :value="item.value">
+							</el-option>
+						</el-select>
+					</el-col>
+					<el-col :span="3">出险时间</el-col>
+					<el-col :span="9">
+						<el-date-picker
+						  format="yyyy-MM-dd HH"	
+						  v-model="form.damageTime"
+						  type="datetime"
+						  placeholder="选择日期时间">
+						</el-date-picker>
+					</el-col>
+				</el-form-item>
+				<el-form-item>
+					<el-col :span="3">出险地点</el-col>
+					<el-col :span="3" style="display: flex;">
+						<el-autocomplete
+						  popper-class="my-autocomplete"
+						  style="width: 100%;"
+						  v-model="provinceName"
+						  :fetch-suggestions="queryProvince"
+						  placeholder="省"
+						  @select="selectProvince">
+						</el-autocomplete>
+					</el-col>
+					<el-col v-show="provinceName" :span="1">-</el-col>
+					<el-col v-show="provinceName" :span="3">
+						<el-autocomplete
+						  popper-class="my-autocomplete"
+						  style="width: 100%;"
+						  v-model="cityName"
+						  :fetch-suggestions="queryCity"
+						  placeholder="市"
+						  @select="selectCity">
+						</el-autocomplete>
+					</el-col>
+					<el-col v-show="cityName" :span="1">-</el-col>
+					<el-col v-show="cityName" :span="3">
+						<el-autocomplete
+						  style="width: 100%;"
+						  v-model="countyCodeName"
+						  :fetch-suggestions="queryCountyCode"
+						  placeholder="区"
+						  @select="selectCountyCode"
+						></el-autocomplete>
+					</el-col>
+					<el-col :span="1">-</el-col>
+					<el-col :span="9">
+						<!-- <el-autocomplete
+						style="width: 100%;"
+						  v-model="form.damageAddress"
+						  :fetch-suggestions="queryAddress"
+						  placeholder="详细地址"
+						  @select="handleDamageCode"
+						></el-autocomplete> -->
+						<el-input v-model="form.damageAddress" maxlength="200" placeholder="详细地址"></el-input>
+					</el-col>
+				</el-form-item>
+				<el-form-item>
+					<el-col :span="3">报损金额</el-col>
+					<el-col :span="9" style="display: flex;">
+						<el-input-number v-model="form.reportLoss" :precision="2" :min="0" label="报损金额"></el-input-number>
+					</el-col>
+				</el-form-item>
+				<el-form-item>
+					<el-col :span="3">报案人</el-col>
+					<el-col :span="9">
+						<el-input v-model="form.reportorName"></el-input>
+					</el-col>
+					<el-col :span="3">报案人电话</el-col>
+					<el-col :span="9">
+						<el-input v-model="form.reportorPhone"></el-input>
+					</el-col>
+				</el-form-item>
+				<el-form-item>
+					<el-col :span="3">联系人</el-col>
+					<el-col :span="9">
+						<el-input v-model="form.linkerName"></el-input>
+					</el-col>
+					<el-col :span="3">联系人电话</el-col>
+					<el-col :span="9">
+						<el-input v-model="form.linkerPhone"></el-input>
+					</el-col>
+				</el-form-item>
+				<el-form-item>
+					<el-col :span="3">出险经过描述</el-col>
+					<el-col :span="21">
+						<el-input type="textarea" v-model="form.remark" maxlength="500" show-word-limit></el-input>
+					</el-col>
+				</el-form-item>
+				<el-form-item>
+					<el-button type="primary" @click='handleSubmit'>提交</el-button>
+					<el-button @click.native.prevent>取消</el-button>
+				</el-form-item>
+			</el-form>
+		</el-card>
+	</section>
+</template>
+
+<script>
+	import { getPolicyList,getDamageCodes,getProvinceList,getCityList,getCountyCodeList,saveReport } from '@/api/api';
+	import { formatTimeToStr} from '@/common/js/date.js';
+	export default {
+		data() {
+			return {
+				filters: {
+					policyNo: '',
+					insuredCode: '',
+					appliCode: ''
+				},
+				total: 0,
+				page: 1,
+				pageSize: 5,
+				listLoading: false,
+				showReport: false,
+				provinceName: '',
+				cityName: '',
+				countyCodeName: '',
+				form: {
+					reportNo: '',
+					reportTime: '',
+					policyNo: '',
+					insuranceName: '',
+					insuranceCode: '',
+					insuredName: '',
+					insuredCode: '',
+					policyType: '',
+					comCode: '',
+					comName: '',
+					reportLoss: 0,
+					damageCode: '',
+					damageTime: '',
+					province: '',
+					city: '',
+					countyCode: '',
+					damageAddress: '',
+					reportorName: '',
+					reportorPhone: '',
+					linkerName: '',
+					linkerPhone: '',
+					remark: ''
+				},
+				damageOptions: [],
+				provinceRestaurants: [],
+				cityRestaurants: [],
+				countyCodeRestaurants: [],
+				tableData: []
+			}
+		},
+		methods: {
+			//有效标志显示转换
+			formatStatus(row, column) {
+				let status = '';
+				switch(row.policyStatus) {
+					case '0' : status = '未生效';break;
+					case '1' : status = '已生效';break;
+					case '2' : status = '已过期';break;
+					case '9' : status = '已退保';break;
+					default: '未知'
+				}
+				return status;
+			},
+			formatStartTime(row, column) {
+				return formatTimeToStr(row.startTime, 'yyyy-MM-dd hh:mm:ss');
+			},
+			formatEndTime(row, column) {
+				return formatTimeToStr(row.endTime, 'yyyy-MM-dd hh:mm:ss');
+			},
+			handleSizeChange(val) {
+				this.pageSize = val;
+				this.getCommon();
+			},
+			handleCurrentChange(val) {
+				this.page = val;
+				this.getCommon();
+			},
+			selectPolicy(index, row) {
+				this.form.policyNo = row.policyNo;
+				this.form.insuranceName = row.insuranceName;
+				this.form.insuranceCode = row.insuranceCode;
+				this.form.insuredName = row.insuredName;
+				this.form.insuredCode = row.insuredCode;
+				this.form.policyType = row.policyType;
+				this.form.comCode = row.comCode;
+				this.form.comName = row.comName;
+				this.showReport = true;
+			},
+			//获取字典列表
+			getPolicy() {
+				let params = {
+					page: this.page,
+					pageSize: this.pageSize,
+					policyNo: this.filters.policyNo,
+					insuredCode: this.filters.insuredCode,
+					appliCode: this.filters.appliCode
+				};
+				this.listLoading = true;
+				//NProgress.start();
+				getPolicyList(params).then((res) => {
+					this.tableData = res.data.records;
+					this.total = res.data.total;
+					this.listLoading = false;
+					//NProgress.done();
+				});
+			},
+			queryProvince(queryString, cb) {
+				let restaurants = this.provinceRestaurants;
+				let results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
+				// 调用 callback 返回建议列表的数据
+				cb(results);
+			},
+			queryCity(queryString, cb) {
+				let restaurants = this.cityRestaurants;
+				let results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
+				// 调用 callback 返回建议列表的数据
+				cb(results);
+			},
+			queryCountyCode(queryString, cb) {
+				let restaurants = this.countyCodeRestaurants;
+				let results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
+				// 调用 callback 返回建议列表的数据
+				cb(results);
+			},
+			createFilter(queryString) {
+				return (restaurant) => {
+				  return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
+				};
+			},
+			selectProvince(item) {
+				this.form.province = item.label;
+				this.provinceName = item.value;
+				this.getCity(this.form.province);
+			},
+			selectCity(item) {
+				this.form.city = item.label;
+				this.cityName = item.value;
+				this.getCountyCode(this.form.city);
+			},
+			selectCountyCode(item) {
+				this.form.countyCode = item.label;
+				this.countyCodeName = item.value;
+			},
+			getProvince() {
+				getProvinceList().then((res) => {
+					this.provinceRestaurants = res.data.data;
+				});
+			},
+			getCity(preCode) {
+				let params = {
+					preCode: preCode
+				};
+				getCityList(params).then((res) => {
+					this.cityRestaurants = res.data.data;
+				});
+			},
+			getCountyCode(preCode) {
+				let params = {
+					preCode: preCode
+				};
+				getCountyCodeList(params).then((res) => {
+					this.countyCodeRestaurants = res.data.data;
+				});
+			},
+			getDamageOptions() {
+				getDamageCodes().then((res) => {
+					this.damageOptions = res.data.data;
+				});
+			},
+			cellClass() {
+				return 'text-align: center;'
+			},
+			headCellClass() {
+				return 'background-color: #f5f7fa !important;text-align: center;'
+			},
+			handleSubmit() {
+				saveReport(this.form).then((res) => {
+					if(res) {
+						this.$message.success("报案成功");
+					}
+				});
+			}
+		},
+		mounted() {
+			this.getDamageOptions();
+			this.getProvince();
+		}
+	}
+</script>
+
+<style>
+	.labelTd {
+		width: 100px;
+		text-align: right;
+	}
+	
+	.el-autocomplete-suggestion {
+		width: 160px !important;
+	}
+</style>

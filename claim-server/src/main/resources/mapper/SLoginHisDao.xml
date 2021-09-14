@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- ============================================================== -->
+<!-- ================可直接使用Base配置文件中定义的节点！================ -->
+<!-- ============================================================== -->
+<mapper namespace="com.claim.server.common.dao.SLoginHisDao">
+
+    <delete id="deleteHis" parameterType="string">
+        DELETE
+        a
+        FROM
+        s_loginhis a ,( SELECT b.LoginTime FROM s_loginhis b WHERE b.UserCode = #{userCode} ORDER BY b.LoginTime DESC LIMIT 4,1 ) AS tmp
+        WHERE
+        a.UserCode = #{userCode} AND a.LoginTime = tmp.LoginTime
+    </delete>
+
+    <select id="lastLoginTime" resultType="date" parameterType="string">
+        SELECT MAX(LoginTime) FROM s_loginhis WHERE UserCode = #{userCode}
+    </select>
+
+    <select id="selectByUserCode" resultType="map" parameterType="string">
+        SELECT DATE_FORMAT(LoginTime,'%Y-%m-%d %H:%i:%s') AS LoginTime FROM s_loginhis WHERE UserCode = #{userCode} ORDER BY LoginTime LIMIT 3;
+    </select>
+</mapper>

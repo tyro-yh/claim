@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- ============================================================== -->
+<!-- ================可直接使用Base配置文件中定义的节点！================ -->
+<!-- ============================================================== -->
+<mapper namespace="com.claim.server.approve.dao.BApproveDao">
+    <select id="selectBySettlementNo" parameterType="string" resultType="com.claim.server.approve.po.BApprove">
+        SELECT * FROM b_approve WHERE SettlementNo = #{settlementNo} AND ApproveFlag IN ('1','2')
+    </select>
+
+    <select id="selectEndCaseDoing" parameterType="string" resultType="com.claim.server.approve.po.BApprove">
+        SELECT * FROM b_approve WHERE ReportNo = #{reportNo} AND ApproveTypeCode = 'EndCase' AND ApproveFlag IS NULL
+    </select>
+</mapper>

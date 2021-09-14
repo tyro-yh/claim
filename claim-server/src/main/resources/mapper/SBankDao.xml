@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- ============================================================== -->
+<!-- ================可直接使用Base配置文件中定义的节点！================ -->
+<!-- ============================================================== -->
+<mapper namespace="com.claim.server.common.dao.SBankDao">
+    <select id="selectByKindCode" parameterType="string" resultType="map">
+        SELECT BankName,DirectBankCode FROM s_bank_card WHERE KindCode = #{kindCode} AND CardLength = #{cardLength} LIMIT 1
+    </select>
+
+    <select id="selectByBankCode" parameterType="string" resultType="map">
+        SELECT Code as 'label',Name as 'value' FROM s_bank_custom WHERE SyBankId = #{bankCode}
+    </select>
+</mapper>

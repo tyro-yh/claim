@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- ============================================================== -->
+<!-- ================可直接使用Base配置文件中定义的节点！================ -->
+<!-- ============================================================== -->
+<mapper namespace="com.claim.server.common.dao.SUserDao">
+    <select id="loginCheck" parameterType="com.claim.server.common.po.SUser" resultType="com.claim.server.common.po.SUser">
+        select * from s_user where UserCode = #{userCode} and PassWord = #{passWord}
+    </select>
+
+    <select id="selectByUserCode" parameterType="string" resultType="com.claim.server.common.po.SUser">
+        select * from s_user where UserCode = #{userCode}
+    </select>
+</mapper>

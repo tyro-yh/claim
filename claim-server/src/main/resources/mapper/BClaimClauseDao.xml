@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- ============================================================== -->
+<!-- ================可直接使用Base配置文件中定义的节点！================ -->
+<!-- ============================================================== -->
+<mapper namespace="com.claim.server.claim.dao.BClaimClauseDao">
+    <select id="selectByReportNoAndFeeType" parameterType="string" resultType="com.claim.server.claim.po.BClaimClause">
+        SELECT * FROM b_claim_clause WHERE ReportNo = #{reportNo} AND FeeType = #{feeType}
+    </select>
+
+    <select id="selectByClauseCodeAndItemCode" parameterType="string" resultType="com.claim.server.claim.po.BClaimClause">
+        SELECT * FROM b_claim_clause WHERE ClauseCode = #{clauseCode} AND ItemCode = #{itemCode} AND ReportNo = #{reportNo} LIMIT 1
+    </select>
+
+    <delete id="deleteByClaimNo" parameterType="string">
+        DELETE FROM b_claim_clause WHERE ClaimNo = #{claimNo}
+    </delete>
+</mapper>

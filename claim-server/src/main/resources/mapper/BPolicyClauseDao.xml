@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- ============================================================== -->
+<!-- ================可直接使用Base配置文件中定义的节点！================ -->
+<!-- ============================================================== -->
+<mapper namespace="com.claim.server.policy.dao.BPolicyClauseDao">
+    <select id="selectClauseByPolicyNo" parameterType="string" resultType="com.claim.server.policy.po.BPolicyClause">
+        SELECT * FROM b_policy_clause WHERE PolicyNo = #{policyNo} AND FeeType = #{feeType} AND KindFlag = '1'
+    </select>
+
+    <select id="selectItems" parameterType="string" resultType="com.claim.server.policy.po.BPolicyClause">
+        SELECT * FROM b_policy_clause WHERE PolicyNo = #{policyNo} AND ClauseCode = #{clauseCode} AND KindFlag = '2'
+    </select>
+</mapper>

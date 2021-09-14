@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- ============================================================== -->
+<!-- ================可直接使用Base配置文件中定义的节点！================ -->
+<!-- ============================================================== -->
+<mapper namespace="com.claim.server.common.dao.SCommonDao">
+    <select id="initDataType" resultType="map">
+        SELECT DataTypeCode AS 'value',DataTypeName AS 'label' FROM s_common WHERE ValidStatus = '1' GROUP BY DataTypeCode
+    </select>
+
+    <select id="getDamageCodes" resultType="map">
+        SELECT DataCode AS 'value',DataName AS 'label' FROM s_common WHERE ValidStatus = '1' AND DataTypeCode = 'damage'
+    </select>
+
+    <select id="getProvinceList" resultType="map">
+        SELECT DataName AS 'value',DataCode AS 'label' FROM s_common WHERE ValidStatus = '1' AND DataTypeCode = 'province'
+    </select>
+
+    <select id="getCityList" resultType="map" parameterType="string">
+        SELECT DataName AS 'value',DataCode AS 'label' FROM s_common WHERE ValidStatus = '1' AND DataTypeCode = 'city' AND PreCode = #{preCode}
+    </select>
+
+    <select id="getCountyCodeList" resultType="map" parameterType="string">
+        SELECT DataName AS 'value',DataCode AS 'label' FROM s_common WHERE ValidStatus = '1' AND DataTypeCode = 'countyCode' AND PreCode = #{preCode}
+    </select>
+
+    <select id="selectByDataType" resultType="map" parameterType="string">
+        SELECT DataCode AS 'value',DataName AS 'label' FROM s_common WHERE ValidStatus = '1'
+        AND DataTypeCode = #{dataTypeCode}
+    </select>
+
+    <select id="selectByDataTypeAndCode" resultType="string" parameterType="string">
+        SELECT DataName FROM s_common WHERE DataTypeCode = #{dataTypeCode} AND DataCode = #{dataCode}
+    </select>
+</mapper>
