@@ -161,4 +161,34 @@ public class CommonUtil {
     public static String formatDateTime(Long timestamp) {
         return formatDateTime(timestamp,dateTimePattern);
     }
+
+    /**
+     * 转换时间
+     * @param dateStr
+     * @param pattern
+     * @return
+     */
+    public static Date parseDateTime(String dateStr,String pattern) {
+        if (dateStr == null){
+            return null;
+        }
+
+        if (StringUtils.isBlank(pattern)) {
+            pattern = dateTimePattern;
+        }
+
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern(pattern);
+        Instant instant = LocalDateTime.parse(dateStr,dtf).atZone(ZoneId.systemDefault()).toInstant();
+        return Date.from(instant);
+    }
+
+    /**
+     * 转换时间
+     * @param dateStr
+     * pattern 默认 yyyy-MM-dd HH:mm:ss
+     * @return
+     */
+    public static Date parseDateTime(String dateStr) {
+        return parseDateTime(dateStr,dateTimePattern);
+    }
 }

@@ -24,6 +24,10 @@
         SELECT DataName AS 'value',DataCode AS 'label' FROM s_common WHERE ValidStatus = '1' AND DataTypeCode = 'countyCode' AND PreCode = #{preCode}
     </select>
 
+    <select id="getCertifyList" resultType="map">
+        SELECT DataCode AS 'value',DataName AS 'label' FROM s_common WHERE ValidStatus = '1' AND DataTypeCode = 'certify'
+    </select>
+
     <select id="selectByDataType" resultType="map" parameterType="string">
         SELECT DataCode AS 'value',DataName AS 'label' FROM s_common WHERE ValidStatus = '1'
         AND DataTypeCode = #{dataTypeCode}

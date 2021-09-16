@@ -185,6 +185,12 @@ public class DictApi {
         return new ApiResponse(list);
     }
 
+    @RequestMapping(value = "/getCertifyList",method = RequestMethod.POST)
+    public ApiResponse getCertifyList() {
+        List<Map> list = sCommonDao.getCertifyList();
+        return new ApiResponse(list);
+    }
+
     @RequestMapping(value = "editCommon",method = RequestMethod.POST)
     public ApiResponse editCommon(@RequestBody SCommon params) {
         sCommonDao.updateById(params);

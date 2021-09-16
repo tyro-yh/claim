@@ -13,7 +13,7 @@
 				<el-menu-item index="Base">案件基本信息</el-menu-item>
 				<el-menu-item index="Claim">立案处理</el-menu-item>
 				<el-menu-item index="Settlement">理算处理</el-menu-item>
-				<el-menu-item index="4">资料收集</el-menu-item>
+				<el-menu-item index="DataCollection">资料收集</el-menu-item>
 				<el-submenu index="5">
 					<template slot="title">更多</template>
 					<el-menu-item index="5-1">人伤处理</el-menu-item>
@@ -47,6 +47,7 @@
 	import Base from '@/views/claim/Base.vue'
 	import Claim from '@/views/claim/Claim.vue'
 	import Settlement from '@/views/claim/Settlement.vue'
+	import DataCollection from '@/views/claim/DataCollection.vue'
 	import { getWorkFlowList,applyEndCase,initCaseFlag } from '@/api/api';
 	export default {
 		props: ['reportNo'],
@@ -56,7 +57,8 @@
 		components: {
 			Base,
 			Claim,
-			Settlement
+			Settlement,
+			DataCollection
 		},
 		data() {
 		    return {

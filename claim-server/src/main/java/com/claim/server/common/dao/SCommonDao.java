@@ -19,6 +19,8 @@ public interface SCommonDao extends BaseMapper<SCommon> {
 
     List<Map> getCountyCodeList(@Param(value = "preCode") String preCode);
 
+    List<Map> getCertifyList();
+
     List<Map> selectByDataType(@Param(value = "dataTypeCode") String dataTypeCode);
 
     String selectByDataTypeAndCode(@Param(value = "dataTypeCode") String dataTypeCode,@Param(value = "dataCode") String dataCode);

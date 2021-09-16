@@ -57,6 +57,8 @@ export const getCityList = params => { return axios.post(`${base}/dictionary/get
 
 export const getCountyCodeList = params => { return axios.post(`${base}/dictionary/getCountyCodeList`, params); };
 
+export const getCertifyList = params => { return axios.post(`${base}/dictionary/getCertifyList`); };
+
 export const selectByDataType = params => { return axios.post(`${base}/dictionary/selectByDataType`, params); };
 
 export const editCommon = params => { return axios.post(`${base}/dictionary/editCommon`, params); };
@@ -140,3 +142,9 @@ export const initPayeeList = params => { return axios.post(`${base}/payee/initPa
 export const savePayee = params => { return axios.post(`${base}/payee/savePayee`, params); };
 
 export const initPaymentList = params => { return axios.post(`${base}/payment/initPaymentList`, params); };
+
+export const getCollectionList = params => { return axios.post(`${base}/collection/getCollectionList`, params); };
+
+export const collectionUpload = params => { return axios.post(`${base}/collection/collectionUpload`, params,{headers: {'Content-Type': 'multipart/form-data'}}); };
+
+export const fileDownload = params => { return axios.post(`${base}/collection/fileDownload`, params,{responseType: 'blob'}); };
