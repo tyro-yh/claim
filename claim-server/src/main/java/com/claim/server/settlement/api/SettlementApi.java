@@ -100,6 +100,16 @@ public class SettlementApi {
         return new ApiResponse(map);
     }
 
+    @RequestMapping(value = "checkSettlementForSave",method = RequestMethod.POST)
+    public ApiResponse checkSettlementForSave(@RequestBody JSONObject params) {
+        String reportNo = params.getString("reportNo");
+        String settlementType = params.getString("settlementType");
+        String settlementNo = params.getString("settlementNo");
+        Map map = settlementService.checkSettlementForSave(reportNo,settlementType,settlementNo);
+        return new ApiResponse(map);
+    }
+
+
     @RequestMapping(value = "checkSettlementForSubmit",method = RequestMethod.POST)
     public ApiResponse checkSettlementForSubmit(@RequestBody SettlementFormVo params) {
         Map map = settlementService.checkSettlementForSubmit(params);

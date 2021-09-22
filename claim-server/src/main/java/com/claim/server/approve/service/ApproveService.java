@@ -12,7 +12,7 @@ public interface ApproveService {
 
     BApprove initApproveInfo(Integer approveNo, List<String> preContent);
 
-    void saveApprove(BApprove bApprove);
+    Map saveApprove(BApprove bApprove);
 
     Map submitApprove(BApprove bApprove);
 

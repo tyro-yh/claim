@@ -30,8 +30,8 @@ public class ApproveApi {
 
     @RequestMapping(value = "/saveApprove",method = RequestMethod.POST)
     public ApiResponse saveApprove(@RequestBody BApprove params) {
-        approveService.saveApprove(params);
-        return new ApiResponse();
+        Map map = approveService.saveApprove(params);
+        return new ApiResponse(map);
     }
 
     @RequestMapping(value = "/submitApprove",method = RequestMethod.POST)

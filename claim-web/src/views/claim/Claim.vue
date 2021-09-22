@@ -11,7 +11,7 @@
 					<el-col :offset="1" :span="2">立案时间</el-col>
 					<el-col :span="5">
 						<el-date-picker
-						  format="yyyy-MM-dd HH:mm:ss"	
+						  format="yyyy-MM-dd HH:mm:ss"
 						  v-model="claimInfo.claimTime"
 						  type="datetime"
 						  placeholder="审核完毕自动生成"
@@ -45,7 +45,7 @@
 					<el-col :offset="1" :span="2">出险时间</el-col>
 					<el-col :span="5">
 						<el-date-picker
-						  format="yyyy-MM-dd HH"	
+						  format="yyyy-MM-dd HH"
 						  v-model="claimInfo.damageTime"
 						  type="datetime"
 						  disabled>
@@ -84,7 +84,7 @@
 			<el-table :data="claimKindP" highlight-current-row v-loading="pLoading" style="width: 100%;" border :cell-style="cellClass" :header-cell-style="headCellClass">
 				<el-table-column label="条款-险别" min-width="120">
 					<template slot-scope="scope">
-						<el-select v-model="scope.row.clauseCode" :disabled="claimStatus">
+						<el-select v-model="scope.row.clauseCode" @change="eventClause(scope.row)" :disabled="claimStatus">
 							<el-option
 							  v-for="item in clauseP"
 							  :key="item.clauseCode"
@@ -116,10 +116,11 @@
 				</el-table-column>
 				<el-table-column prop="currency" label="币别" width="80">
 				</el-table-column>
-				<el-table-column label="估损金额" width="140">
+				<el-table-column label="估损金额" width="160">
 					<template slot-scope="scope">
-						<el-input-number style="width: 100%;" v-model="scope.row.sumEstiPaid" :precision="2" :min="0" :controls="false" :disabled="claimStatus"></el-input-number>
-					</template>
+						<el-input-number style="width: 100%;" v-model="scope.row.sumEstiPaid" :precision="2" :min="0" :max="scope.row.amount" :controls="false" :disabled="claimStatus"></el-input-number>
+            <span v-if="isNaN(scope.row.sumEstiPaid)" style="margin-top: 2px;font-size: 10px;color: #F56C6C;float: left;">估损金额不能为空</span>
+          </template>
 				</el-table-column>
 				<el-table-column label="操作" width="100">
 					<template slot-scope="scope">
@@ -136,7 +137,7 @@
 			<el-table :data="claimKindF" highlight-current-row v-loading="fLoading" style="width: 100%;" border :cell-style="cellClass" :header-cell-style="headCellClass">
 				<el-table-column label="条款-险别" min-width="120">
 					<template slot-scope="scope">
-						<el-select v-model="scope.row.clauseCode" :disabled="claimStatus">
+						<el-select v-model="scope.row.clauseCode" @change="eventClause2(scope.row)" :disabled="claimStatus">
 							<el-option
 							  v-for="item in clauseF"
 							  :key="item.clauseCode"
@@ -160,10 +161,11 @@
 				</el-table-column>
 				<el-table-column prop="currency" label="币别" width="80">
 				</el-table-column>
-				<el-table-column label="估损金额" width="140">
+				<el-table-column label="估损金额" width="160">
 					<template slot-scope="scope">
 						<el-input-number style="width: 100%;" v-model="scope.row.sumEstiFee" :precision="2" :min="0" :controls="false" :disabled="claimStatus"></el-input-number>
-					</template>
+            <span v-if="isNaN(scope.row.sumEstiFee)" style="margin-top: 2px;font-size: 10px;color: #F56C6C;float: left;">估损金额不能为空</span>
+          </template>
 				</el-table-column>
 				<el-table-column label="操作" width="100">
 					<template slot-scope="scope">
@@ -231,8 +233,12 @@
 				this.loading = true;
 				initClaimInfo(params).then((res) => {
 					this.claimInfo = res.data.data.claimMain;
-					this.claimKindP = res.data.data.claimKindP;
-					this.claimKindF = res.data.data.claimKindF;
+          if(res.data.data.claimKindP) {
+            this.claimKindP = res.data.data.claimKindP;
+          }
+					if(res.data.data.claimKindF) {
+					  this.claimKindF = res.data.data.claimKindF;
+					}
 					this.clauseP = res.data.data.clauseP;
 					this.clauseF = res.data.data.clauseF;
 					if(this.claimInfo.claimStatus == '1' || this.claimInfo.claimStatus == '2') {
@@ -247,6 +253,13 @@
 				this.claimKindP.push({
 					reportNo: this.reportNo,
 					feeType: 'P',
+          clauseCode: this.clauseP[0].clauseCode,
+          itemCode: this.clauseP[0].itemList[0].itemCode,
+          amount: this.clauseP[0].itemList[0].amount,
+          deductAddRate: this.clauseP[0].itemList[0].deductAddRate,
+          deductAddAmt: this.clauseP[0].itemList[0].deductAddAmt,
+          clauseName: this.clauseP[0].itemList[0].clauseName,
+          itemName: this.clauseP[0].itemList[0].itemName,
 					insuredName: this.claimInfo.insuredName,
 					insuredCode: this.claimInfo.insuredCode,
 					currency: '人民币'
@@ -254,11 +267,37 @@
 			},
 			addClaimKindF() {
 				this.claimKindF.push({
-					reportNo: this.businessKey,
+					reportNo: this.reportNo,
 					feeType: 'F',
+          clauseCode: this.clauseF[0].clauseCode,
+          clauseName: this.clauseP[0].clauseName,
+          costType: '1',
 					currency: '人民币'
 				})
 			},
+      eventClause(row) {
+        let clauseCode = row.clauseCode;
+        this.clauseP.forEach(item => {
+        	if(item.clauseCode == clauseCode) {
+            row.itemCode = item.itemList[0].itemCode;
+            row.amount = item.itemList[0].amount;
+						row.deductAddRate = item2.itemList[0].deductAddRate;
+						row.deductAddAmt = item2.itemList[0].deductAddAmt;
+						row.clauseName = item2.itemList[0].clauseName;
+						row.itemName = item2.itemList[0].itemName;
+        		return;
+        	}
+        });
+      },
+      eventClause2(row) {
+        let clauseCode = row.clauseCode;
+        this.clauseF.forEach(item => {
+        	if(item.clauseCode == clauseCode) {
+        		row.clauseName = item.clauseName;
+        		return;
+        	}
+        });
+      },
 			eventItem(row) {
 				let itemCode = row.itemCode;
 				let clauseCode = row.clauseCode;
@@ -291,12 +330,16 @@
 			collect() {
 				let sumEstiPaid = 0;
 				let sumEstiFee = 0;
-				this.claimKindP.forEach(item => {
-					sumEstiPaid = sumEstiPaid + item.sumEstiPaid;
-				});
-				this.claimKindF.forEach(item => {
-					sumEstiFee = sumEstiFee + item.sumEstiFee;
-				});
+        if(this.claimKindP.length > 0) {
+          this.claimKindP.forEach(item => {
+          	sumEstiPaid = sumEstiPaid + item.sumEstiPaid;
+          });
+        }
+				if(this.claimKindF.length > 0) {
+          this.claimKindF.forEach(item => {
+          	sumEstiFee = sumEstiFee + item.sumEstiFee;
+          });
+        }
 				this.claimInfo.sumEstiPaid = sumEstiPaid;
 				this.claimInfo.sumEstiFee = sumEstiFee;
 				this.claimInfo.sumDefloss = sumEstiPaid + sumEstiFee;
@@ -317,35 +360,95 @@
 					this.$message({
 						type: 'info',
 						message: '已取消删除'
-					});          
+					});
 				});
 			},
 			handleSave() {
-				let params = {
-					claimMain: this.claimInfo,
-					claimKindP: this.claimKindP,
-					claimKindF: this.claimKindF
-				}
-				saveClaim(params).then((res) => {
-					if(res) {
-						this.$message.success("保存成功");
-						this.initClaim();
-					}
-				});
+        if(this.checkRules()) {
+          this.collect();
+          let params = {
+            claimMain: this.claimInfo,
+            claimKindP: this.claimKindP,
+            claimKindF: this.claimKindF
+          }
+          saveClaim(params).then((res) => {
+            if(res) {
+              this.$message.success("保存成功");
+              this.initClaim();
+            }
+          });
+        }
 			},
 			handleSubmit() {
-				let params = {
-					claimMain: this.claimInfo,
-					claimKindP: this.claimKindP,
-					claimKindF: this.claimKindF
-				}
-				submitClaim(params).then((res) => {
-					if(res) {
-						this.$message.success("提交成功");
-						this.initClaim();
-					}
-				});
-			}
+        if(this.checkRules()) {
+          this.collect();
+          let params = {
+          	claimMain: this.claimInfo,
+          	claimKindP: this.claimKindP,
+          	claimKindF: this.claimKindF
+          }
+          submitClaim(params).then((res) => {
+          	if(res) {
+          		this.$message.success("提交成功");
+          		this.initClaim();
+          	}
+          });
+        }
+			},
+      checkRules() {
+        if(this.claimKindP.length == 0 && this.claimKindF.length == 0) {
+          this.$message.warning("估计赔款/估计费用至少要有一条记录");
+          return false;
+        }
+
+        let flag = true;
+        if(this.claimKindF.length > 0) {
+          out:for(let i = 0;i<this.claimKindF.length;i++) {
+            if(isNaN(this.claimKindF[i].sumEstiFee)) {
+              this.$message.warning("估损金额不能为空");
+              flag = false;
+              break;
+            }
+            for(let j = 0;j<this.claimKindF.length;j++) {
+              if(i != j && this.claimKindF[i].clauseCode == this.claimKindF[j].clauseCode
+                  && this.claimKindF[i].costType == this.claimKindF[j].costType) {
+                this.$message.warning("存在重复费用条款");
+                flag = false;
+                break out;
+              }
+            }
+          }
+        }
+
+        if(!flag) {
+          return flag;
+        }
+
+        let flag2 = true;
+        if(this.claimKindP.length > 0) {
+          out:for(let i = 0;i<this.claimKindP.length;i++) {
+            if(isNaN(this.claimKindP[i].sumEstiPaid)) {
+              this.$message.warning("估损金额不能为空");
+              flag2 = false;
+              break;
+            }
+            for(let j = 0;j<this.claimKindP.length;j++) {
+              if(i != j && this.claimKindP[i].clauseCode == this.claimKindP[j].clauseCode
+                  && this.claimKindP[i].itemCode == this.claimKindP[j].itemCode) {
+                this.$message.warning("存在重复赔款条款");
+                flag2 = false;
+                break out;
+              }
+            }
+          }
+        }
+
+        if(!flag2) {
+          return flag2;
+        }
+
+        return true;
+      }
 		}
 	}
 </script>

@@ -23,6 +23,9 @@ public class EndCaseApi {
     public ApiResponse applyEndCase(@RequestBody JSONObject params) {
         String reportNo = params.getString("reportNo");
         Map map = endCaseService.applyEndCase(reportNo);
+        if ("1".equals(map.get("status"))) {
+            endCaseService.doEndCase(reportNo);
+        }
         return new ApiResponse(map);
     }
 

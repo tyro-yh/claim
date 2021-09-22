@@ -51,8 +51,16 @@ public class ApproveServiceImpl implements ApproveService {
     }
 
     @Override
-    public void saveApprove(BApprove bApprove) {
+    public Map saveApprove(BApprove bApprove) {
+        Map map = new HashMap();
+        map.put("status","1");
+        BApprove po = bApproveDao.selectById(bApprove.getApproveNo());
+        if (po.getApproveDate() != null) {
+            map.put("status","0");
+            map.put("msg","该流程已提交，不能重复提交");
+        }
         bApproveDao.updateById(bApprove);
+        return map;
     }
 
     @Override

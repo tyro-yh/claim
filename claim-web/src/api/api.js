@@ -133,6 +133,8 @@ export const cancelSettlement = params => { return axios.post(`${base}/settlemen
 
 export const checkSettlementForAdd = params => { return axios.post(`${base}/settlement/checkSettlementForAdd`, params); };
 
+export const checkSettlementForSave = params => { return axios.post(`${base}/settlement/checkSettlementForSave`, params); };
+
 export const checkSettlementForSubmit = params => { return axios.post(`${base}/settlement/checkSettlementForSubmit`, params); };
 
 export const checkAccountNo = params => { return axios.post(`${base}/common/checkAccountNo`, params); };

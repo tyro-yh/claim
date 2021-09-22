@@ -95,11 +95,14 @@ public class EndCaseServiceImpl implements EndCaseService {
             map.put("msg","存在审核中的结案申请，不能重复申请");
             return map;
         }
+        return map;
+    }
 
+    @Override
+    public void doEndCase(String reportNo) {
         BClaimMain bClaimMain = bClaimMainDao.selectByReportNo(reportNo);
         BEndCase bEndCase = generateCaseNo(bClaimMain);
         generateEndCase(reportNo,bEndCase.getId());
-        return map;
     }
 
     @Override
@@ -118,7 +121,7 @@ public class EndCaseServiceImpl implements EndCaseService {
         endCaseInfo.setComName(bClaimMain.getComName());
         endCaseInfo.setEndCaseTime(endCase.getEndCaseTime());
         endCaseInfo.setDamageTime(bReportMain.getDamageTime());
-        endCaseInfo.setDamageCode(bReportMain.getDamageCode());
+        endCaseInfo.setDamageCode(bClaimMain.getDamageCode());
         String[] str = new String[]{
                 bReportMain.getProvince(),bReportMain.getCity(),bReportMain.getCountyCode(),bReportMain.getDamageAddress()
         };
@@ -215,6 +218,70 @@ public class EndCaseServiceImpl implements EndCaseService {
                 workflowDao.updateById(caseMain);
             }
         }
+    }
+
+    @Override
+    public void autoEndCase(BClaimMain bClaimMain) {
+        BReportMain reportMain = bReportMainDao.selectByReportNo(bClaimMain.getReportNo());
+        reportMain.setCaseFlag(CaseFlagEnum.EndCase.getCode());
+        bReportMainDao.updateById(reportMain);
+        String endCaseTime = CommonUtil.formatDateTime(new Date(),"yyyyMMddHHmmss");
+        String insuranceCode = bClaimMain.getInsuranceCode();
+        String caseNo = "E"+insuranceCode+endCaseTime;
+        BEndCase endCase = new BEndCase();
+        endCase.setReportNo(bClaimMain.getReportNo());
+        endCase.setClaimNo(bClaimMain.getClaimNo());
+        endCase.setCaseNo(caseNo);
+        endCase.setInsuranceCode(bClaimMain.getInsuranceCode());
+        endCase.setInsuranceName(bClaimMain.getInsuranceName());
+        endCase.setHandlerCode("SYSTEM");
+        endCase.setHandlerName("系统");
+        endCase.setSumClaim(bClaimMain.getSumClaim());
+        endCase.setEndCaseTime(new Date());
+        endCase.setEndCaserCode("SYSTEM");
+        endCase.setEndCaserName("系统");
+        bEndCaseDao.insert(endCase);
+
+        bClaimMain.setCaseNo(endCase.getCaseNo());
+        bClaimMain.setEndCaseTime(new Date());
+        bClaimMainDao.updateById(bClaimMain);
+
+        BWorkflow caseMain = workflowDao.selectCaseMain(bClaimMain.getReportNo());
+        caseMain.setEndTime(new Date());
+        caseMain.setTaskStatus(TaskStatusEnum.DONE.getCode());
+        workflowDao.updateById(caseMain);
+
+        BWorkflow endCaseFlow = new BWorkflow();
+        endCaseFlow.setPrevTaskId(caseMain.getTaskId());
+        endCaseFlow.setTaskType(TaskTypeEnum.EndCase.getCode()+"_1");
+        endCaseFlow.setCreator("SYSTEM");
+        endCaseFlow.setHandler("SYSTEM");
+        endCaseFlow.setStartTime(new Date());
+        endCaseFlow.setEndTime(new Date());
+        endCaseFlow.setTaskStatus(TaskStatusEnum.DONE.getCode());
+        endCaseFlow.setComCode(bClaimMain.getComCode());
+        //创建审批节点数据
+        BApprove bApprove = new BApprove();
+        bApprove.setReportNo(bClaimMain.getReportNo());
+        bApprove.setClaimNo(bClaimMain.getClaimNo());
+        bApprove.setEndCaseId(endCase.getId());
+        bApprove.setApproveNode("1");
+        bApprove.setApproveTypeCode(TaskTypeEnum.EndCase.getCode());
+        bApprove.setApproveTypeName(TaskTypeEnum.EndCase.getName());
+        bApprove.setApproveDate(new Date());
+        bApprove.setApproverCode("SYSTEM");
+        bApprove.setApproverName("系统");
+        bApprove.setApproveFlag("1");
+        bApprove.setContent("系统自动完成");
+        Integer approveNo = approveService.createApprove(bApprove);
+
+        endCaseFlow.setBusinessKey(approveNo.toString());
+        endCaseFlow.setReportNo(bClaimMain.getReportNo());
+        endCaseFlow.setPolicyNo(bClaimMain.getPolicyNo());
+        endCaseFlow.setInsurance(bClaimMain.getInsuranceCode());
+        endCaseFlow.setRemark("系统自动结案");
+        workflowDao.insert(endCaseFlow);
+
     }
 
     private BEndCase generateCaseNo(BClaimMain bClaimMain) {

@@ -8,6 +8,7 @@ import com.claim.server.claim.dao.BClaimMainDao;
 import com.claim.server.claim.po.BClaimClause;
 import com.claim.server.claim.po.BClaimMain;
 import com.claim.server.common.po.SUser;
+import com.claim.server.endcase.service.EndCaseService;
 import com.claim.server.payee.dao.BPayeeDao;
 import com.claim.server.payee.po.BPayee;
 import com.claim.server.payment.dao.BPaymentDao;
@@ -89,6 +90,9 @@ public class SettlementServiceImpl implements SettlementService {
 
     @Autowired
     private ProcessService processService;
+
+    @Autowired
+    private EndCaseService endCaseService;
 
     @Override
     public Map createSettlementInfo(String reportNo,String settlementType) {
@@ -341,6 +345,14 @@ public class SettlementServiceImpl implements SettlementService {
                     claimMain.setSumClaim(sumClaim);
                     bClaimMainDao.updateById(claimMain);
                 }
+
+                //是否申请结案为是
+                if("1".equals(settlementMain.getEndCaseFlag())) {
+                    Map map = endCaseService.applyEndCase(settlementMain.getReportNo());
+                    if ("1".equals(map.get("status"))) {
+                        endCaseService.autoEndCase(claimMain);
+                    }
+                }
             }
         } else {
             //退回
@@ -404,6 +416,66 @@ public class SettlementServiceImpl implements SettlementService {
             for (BSettlementMain settlementMain : settlementP) {
                 if (UnderwriteFlagEnum.DOING.getCode().equals(settlementMain.getUnderwriteFlag()) ||
                         UnderwriteFlagEnum.INITORBACK.getCode().equals(settlementMain.getUnderwriteFlag())) {
+                    map.put("status","0");
+                    map.put("msg","存在处理中的赔款理算，不能重复发起");
+                    return map;
+                }
+            }
+        }
+
+        List<BApprove> approves = approveService.selectEndCaseDoing(reportNo);
+        if (approves != null && approves.size() > 0) {
+            map.put("status","0");
+            map.put("msg","存在审核中的结案申请，不能发起理算");
+            return map;
+        }
+
+        BReportMain bReportMain = bReportMainDao.selectByReportNo(reportNo);
+        if ("04".equals(bReportMain.getCaseFlag())) {
+            map.put("status","0");
+            map.put("msg","该案件已结案，不能发起理算");
+            return map;
+        }
+        return map;
+    }
+
+    @Override
+    public Map checkSettlementForSave(String reportNo,String settlementType,String settlementNo) {
+        Map map = new HashMap();
+        map.put("status","1");
+        if (SettlementTypeEnum.Y.getCode().equals(settlementType)) {
+            List<BSettlementMain> settlementY = bSettlementMainDao.selectBySettlementType(reportNo,SettlementTypeEnum.Y.getCode());
+            for (BSettlementMain settlementMain : settlementY) {
+                if (!UnderwriteFlagEnum.CANCEL.getCode().equals(settlementMain.getUnderwriteFlag()) && !settlementMain.getSettlementNo().equals(settlementNo)) {
+                    map.put("status","0");
+                    if (UnderwriteFlagEnum.DONE.getCode().equals(settlementMain.getUnderwriteFlag())) {
+                        map.put("msg","存在已审核的预赔理算，不能重复发起");
+                    } else {
+                        map.put("msg","存在处理中的预赔理算，不能重复发起");
+                    }
+                    return map;
+                }
+            }
+
+            List<BSettlementMain> settlementP = bSettlementMainDao.selectBySettlementType(reportNo,SettlementTypeEnum.P.getCode());
+            for (BSettlementMain settlementMain : settlementP) {
+                if (!UnderwriteFlagEnum.CANCEL.getCode().equals(settlementMain.getUnderwriteFlag())) {
+                    map.put("status","0");
+                    if (UnderwriteFlagEnum.DONE.getCode().equals(settlementMain.getUnderwriteFlag())) {
+                        map.put("msg","存在已审核的赔款理算，不能发起预赔");
+                    } else {
+                        map.put("msg","存在处理中的赔款理算，不能发起预赔");
+                    }
+                    return map;
+                }
+            }
+        }
+
+        if (SettlementTypeEnum.P.getCode().equals(settlementType)) {
+            List<BSettlementMain> settlementP = bSettlementMainDao.selectBySettlementType(reportNo,SettlementTypeEnum.P.getCode());
+            for (BSettlementMain settlementMain : settlementP) {
+                if ((UnderwriteFlagEnum.DOING.getCode().equals(settlementMain.getUnderwriteFlag()) ||
+                        UnderwriteFlagEnum.INITORBACK.getCode().equals(settlementMain.getUnderwriteFlag())) &&  !settlementMain.getSettlementNo().equals(settlementNo)) {
                     map.put("status","0");
                     map.put("msg","存在处理中的赔款理算，不能重复发起");
                     return map;

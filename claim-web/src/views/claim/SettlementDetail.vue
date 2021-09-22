@@ -141,7 +141,8 @@
 								<el-table-column label="赔付金额" width="140">
 									<template slot-scope="scope">
 										<el-input-number style="width: 100%;" v-model="scope.row.sumRealPay" :precision="2" :min="0" :controls="false" :disabled="settlementStatus"></el-input-number>
-									</template>
+                    <span v-if="isNaN(scope.row.sumRealPay)" style="margin-top: 2px;font-size: 10px;color: #F56C6C;float: left;">赔付金额不能为空</span>
+                  </template>
 								</el-table-column>
 								<el-table-column label="操作" width="100">
 									<template slot-scope="scope">
@@ -192,30 +193,34 @@
 								<el-table-column label="核损金额" width="140">
 									<template slot-scope="scope">
 										<el-input-number style="width: 100%;" v-model="scope.row.sumLossChecked" :precision="2" :min="0" :controls="false"></el-input-number>
-									</template>
+                    <span v-if="isNaN(scope.row.sumLossChecked)" style="margin-top: 2px;font-size: 10px;color: #F56C6C;float: left;">核损金额不能为空</span>
+                  </template>
 								</el-table-column>
 								<el-table-column label="责任比例(%)" width="100" style="display: inline;">
 									<template slot-scope="scope">
 										<el-input-number style="width: 100%;" v-model="scope.row.claimRate" :precision="2" :min="0" :max="100" :controls="false"></el-input-number>
-									</template>
+                    <span v-if="isNaN(scope.row.claimRate)" style="margin-top: 2px;font-size: 10px;color: #F56C6C;float: left;">责任比例不能为空</span>
+                  </template>
 								</el-table-column>
 								<el-table-column label="免赔率(%)" width="100">
 									<template slot-scope="scope">
-										<el-input-number style="width: 100%;" v-model="scope.row.deductAddRate" :precision="2" :min="0" :max="100" :controls="false">
-										</el-input-number>
+										<el-input-number style="width: 100%;" v-model="scope.row.deductAddRate" :precision="2" :min="0" :max="100" :controls="false"></el-input-number>
+                    <span v-if="isNaN(scope.row.deductAddRate)" style="margin-top: 2px;font-size: 10px;color: #F56C6C;float: left;">免赔率不能为空</span>
 									</template>
 								</el-table-column>
 								<el-table-column label="免赔额" width="140">
 									<template slot-scope="scope">
 										<el-input-number style="width: 100%;" v-model="scope.row.deductAddAmt" :precision="2" :min="0" :controls="false"></el-input-number>
-									</template>
+                    <span v-if="isNaN(scope.row.deductAddAmt)" style="margin-top: 2px;font-size: 10px;color: #F56C6C;float: left;">免赔额不能为空</span>
+                  </template>
 								</el-table-column>
 								<el-table-column prop="sumAmt" label="理算金额" width="140">
 								</el-table-column>
 								<el-table-column label="赔付金额" width="140">
 									<template slot-scope="scope">
 										<el-input-number style="width: 100%;" v-model="scope.row.sumRealPay" :precision="2" :min="0" :controls="false"></el-input-number>
-									</template>
+                    <span v-if="isNaN(scope.row.sumRealPay)" style="margin-top: 2px;font-size: 10px;color: #F56C6C;float: left;">赔付金额不能为空</span>
+                  </template>
 								</el-table-column>
 								<el-table-column label="操作" width="100">
 									<template slot-scope="scope">
@@ -369,7 +374,7 @@
 					</el-card>
 				</el-collapse>
 				</el-form>
-				
+
 				<el-dialog
 				  title="收款人匹配"
 				  :visible.sync="dialogPaymentList"
@@ -421,7 +426,7 @@
 						</el-col>
 					</div>
 				</el-dialog>
-				
+
 				<el-dialog
 				  title="收款人登记"
 				  :visible.sync="dialogPayeeList"
@@ -458,7 +463,7 @@
 							</el-pagination>
 						</el-col>
 					</div>
-					
+
 					<el-dialog
 					  title="收款人登记"
 					  :visible.sync="dialogPayeeEdit"
@@ -574,7 +579,7 @@
 <script>
 	import { initSettlementInfo,initSettlementContent,checkAccountNo,initPayeeList,savePayee,
 	initPaymentList,saveSettlement,submitSettlement,getApproveForSettlement,cancelSettlement,
-	checkSettlementForSubmit } from '@/api/api';
+	checkSettlementForSubmit,checkSettlementForSave } from '@/api/api';
 	import { formatTimeToStr} from '@/common/js/date.js';
 	export default {
 		props: ['reportNo','settlementType','settlementNo'],
@@ -720,15 +725,43 @@
 					claimNo: this.form.claimNo,
 					settlementNo: this.form.settlementNo,
 					settlementType: this.settlementType,
+          itemCode: this.claimKindP[0].itemCode,
+          clauseCode: this.claimKindP[0].clauseCode,
+          amount: this.claimKindP[0].amount,
+          deductAddRate: this.claimKindP[0].deductAddRate,
+          deductAddAmt: this.claimKindP[0].deductAddAmt,
+          clauseName: this.claimKindP[0].clauseName,
+          itemName: this.claimKindP[0].itemName,
+          sumLoss: this.claimKindP[0].sumEstiPaid,
+          sumLossChecked: this.claimKindP[0].sumEstiPaid,
+          sumRealPay: this.claimKindP[0].sumEstiPaid,
 					claimRate: 100
 				})
 			},
 			addLossCharge() {
+        let payObject = '';
+        let costType = this.claimKindF[0].costType;
+        if(costType == '1') {
+        	payObject = '1';
+        } else if(costType == '2') {
+        	payObject = '2';
+        } else if(costType == '3') {
+        	payObject = '3';
+        } else {
+        	payObject = '4';
+        }
+
 				this.lossCharge.push({
 					reportNo: this.reportNo,
 					claimNo: this.form.claimNo,
 					settlementNo: this.form.settlementNo,
 					settlementType: this.settlementType,
+          clauseCode: this.claimKindF[0].clauseCode,
+          costType: this.claimKindF[0].costType,
+          clauseName: this.claimKindF[0].clauseName,
+          sumLoss: this.claimKindF[0].sumEstiFee,
+          sumRealPay: this.claimKindF[0].sumEstiFee,
+          payObject: payObject
 				})
 			},
 			newPayment() {
@@ -755,6 +788,8 @@
 						row.clauseName = item.clauseName;
 						row.itemName = item.itemName;
 						row.sumLoss = item.sumEstiPaid;
+						row.sumLossChecked = item.sumEstiPaid;
+						row.sumRealPay = item.sumEstiPaid;
 						return;
 					}
 				});
@@ -795,7 +830,7 @@
 					this.$message({
 						type: 'info',
 						message: '已取消删除'
-					});          
+					});
 				});
 			},
 			delLossCharge(index) {
@@ -809,7 +844,7 @@
 					this.$message({
 						type: 'info',
 						message: '已取消删除'
-					});          
+					});
 				});
 			},
 			delPayment(index) {
@@ -823,24 +858,26 @@
 					this.$message({
 						type: 'info',
 						message: '已取消删除'
-					});          
+					});
 				});
 			},
 			getContent() {
-				let params = {
-					settlementMain: this.form,
-					lossProps: this.lossProp,
-					lossCharges: this.lossCharge
-				};
-				this.loading = true;
-				initSettlementContent(params).then((res) => {
-					this.form = res.data.data.settlementMain;
-					this.lossProp = res.data.data.lossProps;
-					this.lossCharge = res.data.data.lossCharges;
-					setTimeout(() => {
-						this.loading = false;
-					},500);
-				})
+        if(this.checkLoss()) {
+          let params = {
+          	settlementMain: this.form,
+          	lossProps: this.lossProp,
+          	lossCharges: this.lossCharge
+          };
+          this.loading = true;
+          initSettlementContent(params).then((res) => {
+          	this.form = res.data.data.settlementMain;
+          	this.lossProp = res.data.data.lossProps;
+          	this.lossCharge = res.data.data.lossCharges;
+          	setTimeout(() => {
+          		this.loading = false;
+          	},500);
+          })
+        }
 			},
 			showPayeeList() {
 				this.dialogPayeeList = true;
@@ -985,44 +1022,66 @@
 				this.getPayeeList();
 			},
 			handleSave() {
-				if(this.checkRules()) {
-					let params = {
-						settlementMain: this.form,
-						paymentList: this.paymentList,
-						lossProps: this.lossProp,
-						lossCharges: this.lossCharge
-					}
-					saveSettlement(params).then((res) => {
-						if(res) {
-							this.$message.success("保存成功");
-							this.settlementNo = this.form.settlementNo;
-							this.getSettlement();
-						}
-					});
-				}
+        let params1 = {
+        	reportNo:this.reportNo,
+        	settlementType: this.settlementType,
+        	settlementNo: this.form.settlementNo
+        }
+        checkSettlementForSave(params1).then(res => {
+          if(res.data.data.status == '0') {
+          	this.$message.warning(res.data.data.msg);
+          } else {
+            if(this.checkRules()) {
+              let params = {
+              	settlementMain: this.form,
+              	paymentList: this.paymentList,
+              	lossProps: this.lossProp,
+              	lossCharges: this.lossCharge
+              }
+              saveSettlement(params).then((res) => {
+              	if(res) {
+              		this.$message.success("保存成功");
+              		this.settlementNo = this.form.settlementNo;
+              		this.getSettlement();
+              	}
+              });
+            }
+          }
+        })
 			},
 			handleSubmit() {
-				if(this.checkRules()) {
-					let params = {
-						settlementMain: this.form,
-						paymentList: this.paymentList,
-						lossProps: this.lossProp,
-						lossCharges: this.lossCharge
-					}
-					checkSettlementForSubmit(params).then((res) => {
-						if(res.data.data.status == '0') {
-							this.$message.warning(res.data.data.msg);
-						} else {
-							submitSettlement(params).then((res2) => {
-								if(res2) {
-									this.$message.success("提交成功");
-									this.settlementNo = this.form.settlementNo;
-									this.getSettlement();
-								}
-							});
-						}
-					});
-				}
+        let params1 = {
+        	reportNo:this.reportNo,
+        	settlementType: this.settlementType,
+        	settlementNo: this.form.settlementNo
+        }
+        checkSettlementForSave(params1).then(res => {
+          if(res.data.data.status == '0') {
+          	this.$message.warning(res.data.data.msg);
+          } else {
+            if(this.checkRules()) {
+              let params = {
+              	settlementMain: this.form,
+              	paymentList: this.paymentList,
+              	lossProps: this.lossProp,
+              	lossCharges: this.lossCharge
+              }
+              checkSettlementForSubmit(params).then((res) => {
+              	if(res.data.data.status == '0') {
+              		this.$message.warning(res.data.data.msg);
+              	} else {
+              		submitSettlement(params).then((res2) => {
+              			if(res2) {
+              				this.$message.success("提交成功");
+              				this.settlementNo = this.form.settlementNo;
+              				this.getSettlement();
+              			}
+              		});
+              	}
+              });
+            }
+          }
+        })
 			},
 			handleCancel() {
 				this.$confirm('注销后无法还原，是否注销?', '申请注销', {
@@ -1043,7 +1102,50 @@
 					this.$message.info('已取消');
 				});
 			},
+      checkLoss() {
+        let flag = true;
+        if(this.lossCharge && this.lossCharge.length > 0) {
+          this.lossCharge.forEach(item => {
+            if(!item.sumRealPay) {
+              this.$message.warning("赔付金额不能为空");
+              flag = false;
+              return false;
+            }
+          });
+        }
+        if(this.lossProp && this.lossProp.length > 0) {
+          this.lossProp.forEach(item => {
+            if(isNaN(item.sumLossChecked)) {
+              this.$message.warning("核损金额不能为空");
+              flag = false;
+              return false;
+            }
+            if(isNaN(item.claimRate)) {
+              this.$message.warning("责任比例不能为空");
+              flag = false;
+              return false;
+            }
+            if(isNaN(item.deductAddRate)) {
+              this.$message.warning("免赔率不能为空");
+              flag = false;
+              return false;
+            }
+            if(isNaN(item.deductAddAmt)) {
+              this.$message.warning("免赔额不能为空");
+              flag = false;
+              return false;
+            }
+            if(isNaN(item.sumRealPay)) {
+              this.$message.warning("赔付金额不能为空");
+              flag = false;
+              return false;
+            }
+          });
+        }
+        return flag;
+      },
 			checkRules() {
+        let flag = true;
 				let content = this.form.content;
 				if(!content) {
 					this.$message.warning("理算报告不能为空");
@@ -1087,7 +1189,7 @@
 						return false;
 					}
 				}
-				return true;
+        return true;
 			},
 			getApprove() {
 				let params = {

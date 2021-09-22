@@ -41,7 +41,7 @@ public class ReportApi {
         generateReportNo(params);
         reportMainDao.insert(params);
         generateWorkflow(params);
-        return new ApiResponse();
+        return new ApiResponse(params);
     }
 
     @RequestMapping(value = "/getReport",method = RequestMethod.POST)

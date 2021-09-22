@@ -45,15 +45,15 @@
 				</el-pagination>
 			</el-col>
 		</el-card>
-		
+
 		<el-card shadow="hover" style="margin-top: 20px;margin-bottom: 20px;" v-show="showReport">
 			<div slot="header" class="clearfix">
 			    <span style="font-size: 22px;">报案基本信息</span>
 				<!-- <div style="float: right; padding: 3px 0">
 					<el-button  type="text">提交</el-button>
 				</div> -->
-			  </div>
-			<el-form ref="form" :model="form" style="margin-left:20%;width:60%;min-width:600px;">
+      </div>
+			<el-form v-if="!form.reportNo" ref="form" :rules="rules" :model="form" style="margin-left:20%;width:60%;min-width:600px;">
 				<el-form-item>
 					<el-col :span="3">报案号</el-col>
 					<el-col :span="9">
@@ -95,28 +95,33 @@
 						<el-radio v-model="form.policyType" disabled label="02">团体</el-radio>
 					</el-col>
 				</el-form-item>
-				<el-form-item>
-					<el-col :span="3">出险原因</el-col>
-					<el-col :span="9" style="display: flex;">
-						<el-select v-model="form.damageCode" placeholder="请选择出险原因">
-							<el-option
-							  v-for="item in damageOptions"
-							  :key="item.value"
-							  :label="item.label"
-							  :value="item.value">
-							</el-option>
-						</el-select>
-					</el-col>
-					<el-col :span="3">出险时间</el-col>
-					<el-col :span="9">
-						<el-date-picker
-						  format="yyyy-MM-dd HH"	
-						  v-model="form.damageTime"
-						  type="datetime"
-						  placeholder="选择日期时间">
-						</el-date-picker>
-					</el-col>
-				</el-form-item>
+        <el-form-item>
+          <el-col :span="3"><span style="color: #F56C6C;margin-right: 4px;">*</span>出险原因</el-col>
+          <el-col :span="9">
+            <el-form-item prop="damageCode">
+              <el-select style="width: 100%;" v-model="form.damageCode" placeholder="请选择出险原因">
+                <el-option
+                  v-for="item in damageOptions"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="3"><span style="color: #F56C6C;margin-right: 4px;">*</span>出险时间</el-col>
+          <el-col :span="9">
+            <el-form-item prop="damageTime">
+              <el-date-picker
+                style="width: 100%;"
+                format="yyyy-MM-dd HH"
+                v-model="form.damageTime"
+                type="datetime"
+                placeholder="选择日期时间">
+              </el-date-picker>
+            </el-form-item>
+          </el-col>
+        </el-form-item>
 				<el-form-item>
 					<el-col :span="3">出险地点</el-col>
 					<el-col :span="3" style="display: flex;">
@@ -169,13 +174,17 @@
 					</el-col>
 				</el-form-item>
 				<el-form-item>
-					<el-col :span="3">报案人</el-col>
+					<el-col :span="3"><span style="color: #F56C6C;margin-right: 4px;">*</span>报案人</el-col>
 					<el-col :span="9">
-						<el-input v-model="form.reportorName"></el-input>
+            <el-form-item prop="reportorName">
+              <el-input v-model="form.reportorName"></el-input>
+            </el-form-item>
 					</el-col>
-					<el-col :span="3">报案人电话</el-col>
+					<el-col :span="3"><span style="color: #F56C6C;margin-right: 4px;">*</span>报案人电话</el-col>
 					<el-col :span="9">
-						<el-input v-model="form.reportorPhone"></el-input>
+            <el-form-item prop="reportorPhone">
+              <el-input v-model="form.reportorPhone"></el-input>
+            </el-form-item>
 					</el-col>
 				</el-form-item>
 				<el-form-item>
@@ -196,9 +205,19 @@
 				</el-form-item>
 				<el-form-item>
 					<el-button type="primary" @click='handleSubmit'>提交</el-button>
-					<el-button @click.native.prevent>取消</el-button>
+					<el-button @click.native='handleResat'>重置</el-button>
 				</el-form-item>
 			</el-form>
+
+      <el-result v-if="form.reportNo" icon="success" title="报案成功">
+        <template slot="subTitle">
+          报案号:{{form.reportNo}}
+        </template>
+        <template slot="extra">
+          <el-button type="primary" size="medium" @click="toWorkflow">流程图</el-button>
+        </template>
+      </el-result>
+
 		</el-card>
 	</section>
 </template>
@@ -246,6 +265,20 @@
 					linkerPhone: '',
 					remark: ''
 				},
+        rules: {
+            damageCode: [
+              { required: true, message: '请选择出险原因', trigger: 'change' }
+            ],
+            damageTime: [
+              { type: 'date', required: true, message: '请选择出险时间', trigger: 'change' }
+            ],
+            reportorName: [
+              { required: true, message: '请输入报案人', trigger: 'blur' }
+            ],
+            reportorPhone: [
+              { required: true, message: '请输入报案人电话', trigger: 'blur' }
+            ],
+        },
 				damageOptions: [],
 				provinceRestaurants: [],
 				cityRestaurants: [],
@@ -379,12 +412,29 @@
 				return 'background-color: #f5f7fa !important;text-align: center;'
 			},
 			handleSubmit() {
-				saveReport(this.form).then((res) => {
-					if(res) {
-						this.$message.success("报案成功");
-					}
-				});
-			}
+        this.$refs['form'].validate((valid) => {
+          if (valid) {
+            saveReport(this.form).then((res) => {
+              this.$message.success("报案成功");
+              this.form = res.data.data
+            });
+          } else {
+            return false;
+          }
+        });
+			},
+      handleResat() {
+        this.$refs['form'].resetFields();
+      },
+      toWorkflow() {
+        let routeUrl = this.$router.resolve({
+        	name: 'Workflow',
+        	params: {
+        		reportNo:this.form.reportNo
+        	}
+        });
+        window.open(routeUrl.href, '_blank');
+      }
 		},
 		mounted() {
 			this.getDamageOptions();
@@ -398,7 +448,7 @@
 		width: 100px;
 		text-align: right;
 	}
-	
+
 	.el-autocomplete-suggestion {
 		width: 160px !important;
 	}

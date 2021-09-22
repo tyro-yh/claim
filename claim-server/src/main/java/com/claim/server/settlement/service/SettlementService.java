@@ -25,5 +25,7 @@ public interface SettlementService {
 
     Map checkSettlementForAdd(String reportNo,String settlementType);
 
+    Map checkSettlementForSave(String reportNo,String settlementType,String settlementNo);
+
     Map checkSettlementForSubmit(SettlementFormVo params);
 }
