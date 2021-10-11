@@ -61,13 +61,14 @@
 <script>
 	import { initApproveInfo,saveApprove,submitApprove } from '@/api/api';
 	export default {
-		props: ['businessKey'],
+		props: ['businessKey','handler'],
 		data() {
 			return {
 				approveInfo: {},
 				loading: false,
 				approveStatus: false,
 				preContent: '',
+        sysUserCode: '',
         rules: {
           approveFlag: [
             { required: true, message: '请选择业务动作', trigger: 'blur'}
@@ -108,6 +109,10 @@
         this.$refs.approveInfo.validate();
 			},
 			handleSave() {
+        if(this.sysUserCode != this.handler) {
+          this.$message.warning("非本人任务不能操作");
+          return false;
+        }
         this.$refs['approveInfo'].validate((valid) => {
           if (valid) {
             saveApprove(this.approveInfo).then((res) => {
@@ -125,6 +130,10 @@
 
 			},
 			handleSubmit() {
+        if(this.sysUserCode != this.handler) {
+          this.$message.warning("非本人任务不能操作");
+          return false;
+        }
         this.$refs['approveInfo'].validate((valid) => {
           if (valid) {
             submitApprove(this.approveInfo).then((res) => {
@@ -142,6 +151,19 @@
 			}
 		},
 		mounted() {
+      window.addEventListener('storage', event => {
+        if(event.key == 'user') {
+          let nv = JSON.parse(event.newValue);
+          if(nv && (this.sysUserCode != nv.userCode)) {
+            window.location.reload();
+          }
+        }
+      })
+      let user = localStorage.getItem('user');
+      if (user) {
+      	user = JSON.parse(user);
+      	this.sysUserCode = user.userCode || '';
+      }
 			this.getApprove();
 		}
 	}

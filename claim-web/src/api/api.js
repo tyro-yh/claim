@@ -4,8 +4,9 @@ import router from '@/router.js';
 let base = '/claim';
 
 axios.interceptors.request.use(function (config) {
+  let user= JSON.parse(localStorage.getItem('user'));
 	let token = '';
-	let user = JSON.parse(sessionStorage.getItem('user'));
+	// let user = JSON.parse(sessionStorage.getItem('user'));
 	if (user) {
 		token = user.token;
 	}
@@ -18,7 +19,7 @@ axios.interceptors.request.use(function (config) {
 // 添加响应拦截器
 axios.interceptors.response.use((response) => {
 	if (response.headers['logout']) {
-		sessionStorage.removeItem('user');
+		localStorage.removeItem('user');
 		router.push({name:'Login',params:{msg:'登录过期,请重新登录'}});
 	} else {
 		return response;
@@ -64,6 +65,10 @@ export const selectByDataType = params => { return axios.post(`${base}/dictionar
 export const editCommon = params => { return axios.post(`${base}/dictionary/editCommon`, params); };
 
 export const addCommon = params => { return axios.post(`${base}/dictionary/addCommon`, params); };
+
+export const getDiagnosisList = params => { return axios.post(`${base}/dictionary/getDiagnosisList`, params); };
+
+export const getHandlerList = params => { return axios.post(`${base}/dictionary/getHandlerList`, params); };
 
 export const getMyTask = params => { return axios.post(`${base}/workflow/myTask`, params); };
 
@@ -150,3 +155,17 @@ export const getCollectionList = params => { return axios.post(`${base}/collecti
 export const collectionUpload = params => { return axios.post(`${base}/collection/collectionUpload`, params,{headers: {'Content-Type': 'multipart/form-data'}}); };
 
 export const fileDownload = params => { return axios.post(`${base}/collection/fileDownload`, params,{responseType: 'blob'}); };
+
+export const getPersonList = params => { return axios.post(`${base}/person/getPersonList`, params); };
+
+export const getDonePersonList = params => { return axios.post(`${base}/person/getDonePersonList`, params); };
+
+export const initPersonInfo = params => { return axios.post(`${base}/person/initPersonInfo`, params); };
+
+export const getPersonInfo = params => { return axios.post(`${base}/person/getPersonInfo`, params); };
+
+export const initPersonApproveInfo = params => { return axios.post(`${base}/person/initPersonApproveInfo`, params); };
+
+export const savePerson = params => { return axios.post(`${base}/person/savePerson`, params); };
+
+export const submitPerson = params => { return axios.post(`${base}/person/submitPerson`, params); };

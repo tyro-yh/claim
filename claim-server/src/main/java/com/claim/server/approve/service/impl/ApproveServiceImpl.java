@@ -7,6 +7,7 @@ import com.claim.server.claim.service.ClaimService;
 import com.claim.server.common.po.SUser;
 import com.claim.server.common.vo.LoginUser;
 import com.claim.server.endcase.service.EndCaseService;
+import com.claim.server.person.service.PersonService;
 import com.claim.server.settlement.service.SettlementService;
 import com.claim.server.utils.CommonUtil;
 import com.claim.server.utils.TaskTypeEnum;
@@ -33,6 +34,9 @@ public class ApproveServiceImpl implements ApproveService {
     @Autowired
     private EndCaseService endCaseService;
 
+    @Autowired
+    private PersonService personService;
+
     @Override
     public Integer createApprove(BApprove bApprove) {
         bApproveDao.insert(bApprove);
@@ -58,6 +62,7 @@ public class ApproveServiceImpl implements ApproveService {
         if (po.getApproveDate() != null) {
             map.put("status","0");
             map.put("msg","该流程已提交，不能重复提交");
+            return map;
         }
         bApproveDao.updateById(bApprove);
         return map;
@@ -71,6 +76,7 @@ public class ApproveServiceImpl implements ApproveService {
         if (po.getApproveDate() != null) {
             map.put("status","0");
             map.put("msg","该流程已提交，不能重复提交");
+            return map;
         }
         SUser user = CommonUtil.getLoginUser();
         bApprove.setApproveDate(new Date());
@@ -83,6 +89,8 @@ public class ApproveServiceImpl implements ApproveService {
             settlementService.undwrt(bApprove);
         } else if (TaskTypeEnum.EndCase.getCode().equals(bApprove.getApproveTypeCode())) {
             endCaseService.endCase(bApprove);
+        } else if (TaskTypeEnum.PersonApprove.getCode().equals(bApprove.getApproveTypeCode())) {
+            personService.personApprove(bApprove);
         }
         return map;
     }

@@ -4,7 +4,7 @@ public enum TaskTypeEnum {
     Report("Report","报案"),
     CaseMain("CaseMain","案件受理"),
     ClaimApprove("ClaimApprove","立案审核"),
-    Settlement("Settlement","理算"),
+    PersonApprove("PersonApprove","人伤跟踪审核"),
     Undwrt("Undwrt","核赔"),
     EndCase("EndCase","结案审核");
 

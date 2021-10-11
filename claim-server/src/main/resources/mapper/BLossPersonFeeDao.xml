@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- ============================================================== -->
+<!-- ================可直接使用Base配置文件中定义的节点！================ -->
+<!-- ============================================================== -->
+<mapper namespace="com.claim.server.settlement.dao.BLossPersonFeeDao">
+    <delete id="deleteBySettlementNo" parameterType="string">
+        DELETE FROM b_loss_person_fee WHERE ReportNo = #{reportNo} AND SettlementNo = #{settlementNo}
+    </delete>
+
+    <select id="getSumHasPaid" parameterType="string" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(SumRealPay),0) FROM b_loss_person_fee WHERE SettlementNo IN (
+          SELECT SettlementNo FROM b_settlement_main WHERE ReportNo = #{reportNo} AND UnderwriteFlag = '2' AND SettlementType != 'F'
+          )
+          AND ClauseCode = #{clauseCode} AND ItemCode = #{itemCode}
+    </select>
+
+    <select id="selectByLossPersonId" parameterType="integer" resultType="com.claim.server.settlement.po.BLossPersonFee">
+        SELECT * FROM b_loss_person_fee WHERE LossPersonId = #{lossPersonId}
+    </select>
+</mapper>

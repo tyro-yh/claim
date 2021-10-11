@@ -9,6 +9,9 @@
 					<el-link :underline="false" v-if="settlementType != 'F'" href="#card2">财产损失信息</el-link>
 					<el-link :underline="false" v-if="settlementType == 'F'" href="#card2">理赔费用信息</el-link>
 				</el-card>
+        <el-card shadow="hover" style="margin-top: 2px;" v-if="settlementType != 'F'">
+        	<el-link :underline="false" href="#card7">人伤损失信息</el-link>
+        </el-card>
 				<el-card shadow="hover" style="margin-top: 2px;">
 					<el-link :underline="false" href="#card3">理算报告</el-link>
 				</el-card>
@@ -52,7 +55,7 @@
 							<el-row :gutter="20">
 								<el-col :span="8">
 									<el-form-item label="理算书类型">
-										<el-select v-model="form.settlementType" disabled>
+										<el-select style="width: 100%;" v-model="form.settlementType" disabled>
 											<el-option value="P" label="赔款理算"></el-option>
 											<el-option value="F" label="费用理算"></el-option>
 											<el-option value="Y" label="预赔理算"></el-option>
@@ -163,7 +166,7 @@
 							<el-table :data="lossProp" v-loading="loading" highlight-current-row style="width: 100%;" border :cell-style="cellClass" :header-cell-style="headCellClass">
 								<el-table-column label="条款-险别" min-width="180">
 									<template slot-scope="scope">
-										<el-select v-model="scope.row.clauseCode">
+										<el-select v-model="scope.row.clauseCode" :disabled="settlementStatus">
 											<el-option
 											  v-for="item in claimKindP"
 											  :key="item.clauseCode"
@@ -175,7 +178,7 @@
 								</el-table-column>
 								<el-table-column label="损失类型" min-width="180">
 									<template slot-scope="scope">
-										<el-select v-model="scope.row.itemCode" v-if="scope.row.clauseCode" @change="eventItem(scope.row)">
+										<el-select v-model="scope.row.itemCode" v-if="scope.row.clauseCode" @change="eventItem(scope.row)" :disabled="settlementStatus">
 											<el-option
 											  v-for="item in claimKindP"
 											  v-if="item.clauseCode == scope.row.clauseCode"
@@ -192,25 +195,25 @@
 								</el-table-column>
 								<el-table-column label="核损金额" width="140">
 									<template slot-scope="scope">
-										<el-input-number style="width: 100%;" v-model="scope.row.sumLossChecked" :precision="2" :min="0" :controls="false"></el-input-number>
+										<el-input-number style="width: 100%;" v-model="scope.row.sumLossChecked" :precision="2" :min="0" :controls="false" :disabled="settlementStatus"></el-input-number>
                     <span v-if="isNaN(scope.row.sumLossChecked)" style="margin-top: 2px;font-size: 10px;color: #F56C6C;float: left;">核损金额不能为空</span>
                   </template>
 								</el-table-column>
 								<el-table-column label="责任比例(%)" width="100" style="display: inline;">
 									<template slot-scope="scope">
-										<el-input-number style="width: 100%;" v-model="scope.row.claimRate" :precision="2" :min="0" :max="100" :controls="false"></el-input-number>
+										<el-input-number style="width: 100%;" v-model="scope.row.claimRate" :precision="2" :min="0" :max="100" :controls="false" :disabled="settlementStatus"></el-input-number>
                     <span v-if="isNaN(scope.row.claimRate)" style="margin-top: 2px;font-size: 10px;color: #F56C6C;float: left;">责任比例不能为空</span>
                   </template>
 								</el-table-column>
 								<el-table-column label="免赔率(%)" width="100">
 									<template slot-scope="scope">
-										<el-input-number style="width: 100%;" v-model="scope.row.deductAddRate" :precision="2" :min="0" :max="100" :controls="false"></el-input-number>
+										<el-input-number style="width: 100%;" v-model="scope.row.deductAddRate" :precision="2" :min="0" :max="100" :controls="false" :disabled="settlementStatus"></el-input-number>
                     <span v-if="isNaN(scope.row.deductAddRate)" style="margin-top: 2px;font-size: 10px;color: #F56C6C;float: left;">免赔率不能为空</span>
 									</template>
 								</el-table-column>
 								<el-table-column label="免赔额" width="140">
 									<template slot-scope="scope">
-										<el-input-number style="width: 100%;" v-model="scope.row.deductAddAmt" :precision="2" :min="0" :controls="false"></el-input-number>
+										<el-input-number style="width: 100%;" v-model="scope.row.deductAddAmt" :precision="2" :min="0" :controls="false" :disabled="settlementStatus"></el-input-number>
                     <span v-if="isNaN(scope.row.deductAddAmt)" style="margin-top: 2px;font-size: 10px;color: #F56C6C;float: left;">免赔额不能为空</span>
                   </template>
 								</el-table-column>
@@ -218,8 +221,8 @@
 								</el-table-column>
 								<el-table-column label="赔付金额" width="140">
 									<template slot-scope="scope">
-										<el-input-number style="width: 100%;" v-model="scope.row.sumRealPay" :precision="2" :min="0" :controls="false"></el-input-number>
-                    <span v-if="isNaN(scope.row.sumRealPay)" style="margin-top: 2px;font-size: 10px;color: #F56C6C;float: left;">赔付金额不能为空</span>
+										<el-input-number style="width: 100%;" v-model="scope.row.sumRealPay" :precision="2" :min="0" :controls="false" :disabled="settlementStatus"></el-input-number>
+                    <!-- <span v-if="isNaN(scope.row.sumRealPay)" style="margin-top: 2px;font-size: 10px;color: #F56C6C;float: left;">赔付金额不能为空</span> -->
                   </template>
 								</el-table-column>
 								<el-table-column label="操作" width="100">
@@ -233,6 +236,127 @@
 							</el-col>
 						</el-collapse-item>
 					</el-card>
+          <el-card id="card7" shadow="hover" style="margin-top: 20px;" v-if="settlementType != 'F'">
+            <el-collapse-item name="7">
+              <template slot="title">
+              	<span style="font-size: 16px;font-weight: 700;color: #303133;">人伤损失信息</span>
+              </template>
+              <template v-for="(row,index) in lossPerson">
+                <el-descriptions class="margin-top" :column="3" border :labelStyle="{'width':'150px'}" :contentStyle="{'min-width':'150px'}">
+                  <template slot="title">
+                    <span style="font-size: 14px;color: #909399;">人伤损失{{index+1}}</span>
+                  </template>
+                  <template slot="extra">
+                    <el-button size="small" icon="el-icon-delete" type="danger" @click="delLossPerson(index)" :disabled="settlementStatus"></el-button>
+                  </template>
+                  <el-descriptions-item label="姓名">
+                    <el-autocomplete
+                      popper-class="my-autocomplete"
+                      style="width: 100%;"
+                      v-model="row.personName"
+                      :fetch-suggestions="queryPerson"
+                      placeholder="支持模糊搜索"
+                      @select="((item) => {selectPerson(item, row)})" :disabled="settlementStatus">
+                    </el-autocomplete>
+                  </el-descriptions-item>
+                  <el-descriptions-item label="性别">
+                    <span v-if="row.sex == '1'">男</span>
+                    <span v-if="row.sex == '2'">女</span>
+                    <span v-if="row.sex == '0'">未知</span>
+                  </el-descriptions-item>
+                  <el-descriptions-item label="年龄">{{row.age}}</el-descriptions-item>
+                  <el-descriptions-item label="证件类型">
+                    <span  v-if="row.identifyType == '01'">身份证</span>
+                    <span  v-if="row.identifyType == '02'">户口薄</span>
+                    <span  v-if="row.identifyType == '03'">护照</span>
+                    <span  v-if="row.identifyType == '04'">军官证</span>
+                    <span  v-if="row.identifyType == '05'">驾驶证</span>
+                    <span  v-if="row.identifyType == '99'">其他</span>
+                  </el-descriptions-item>
+                  <el-descriptions-item label="证件号码">{{row.identifyNo}}</el-descriptions-item>
+                  <el-descriptions-item label="合计金额">{{row.sumAmt}}</el-descriptions-item>
+                </el-descriptions>
+                <el-table :data="row.lossPersonFee" v-loading="loading" highlight-current-row style="width: 100%;" border :cell-style="cellClass" :header-cell-style="headCellClass">
+                  <el-table-column label="条款-险别" min-width="180">
+                  	<template slot-scope="scope">
+                  		<el-select v-model="scope.row.clauseCode" :disabled="settlementStatus">
+                  			<el-option
+                  			  v-for="item in claimKindP"
+                  			  :key="item.clauseCode"
+                  			  :label="item.clauseName"
+                  			  :value="item.clauseCode">
+                  			</el-option>
+                  		</el-select>
+                  	</template>
+                  </el-table-column>
+                  <el-table-column label="损失类型" min-width="180">
+                  	<template slot-scope="scope">
+                  		<el-select v-model="scope.row.itemCode" v-if="scope.row.clauseCode" @change="eventItem3(scope.row)" :disabled="settlementStatus">
+                  			<el-option
+                  			  v-for="item in claimKindP"
+                  			  v-if="item.clauseCode == scope.row.clauseCode"
+                  			  :key="item.itemCode"
+                  			  :label="item.itemName"
+                  			  :value="item.itemCode">
+                  			</el-option>
+                  		</el-select>
+                  	</template>
+                  </el-table-column>
+                  <el-table-column label="费用名目" min-width="140">
+                    <template slot-scope="scope">
+                      <el-select v-model="scope.row.feeTypeCode" disabled>
+                        <el-option v-for="item in feeTypeList"
+                         :key="item.value"
+                         :label="item.label"
+                         :value="item.value">
+                        </el-option>
+                      </el-select>
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="amount" label="保险责任限额" min-width="140">
+                  </el-table-column>
+                  <el-table-column prop="sumLoss" label="定损金额" width="140">
+                  </el-table-column>
+                  <el-table-column prop="sumLossChecked" label="定损金额" width="140">
+                  </el-table-column>
+                  <el-table-column label="责任比例(%)" width="100" style="display: inline;">
+                  	<template slot-scope="scope">
+                  		<el-input-number style="width: 100%;" v-model="scope.row.claimRate" :precision="2" :min="0" :max="100" :controls="false" :disabled="settlementStatus"></el-input-number>
+                      <span v-if="isNaN(scope.row.claimRate)" style="margin-top: 2px;font-size: 10px;color: #F56C6C;float: left;">责任比例不能为空</span>
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="免赔率(%)" width="100">
+                  	<template slot-scope="scope">
+                  		<el-input-number style="width: 100%;" v-model="scope.row.deductAddRate" :precision="2" :min="0" :max="100" :controls="false" :disabled="settlementStatus"></el-input-number>
+                      <span v-if="isNaN(scope.row.deductAddRate)" style="margin-top: 2px;font-size: 10px;color: #F56C6C;float: left;">免赔率不能为空</span>
+                  	</template>
+                  </el-table-column>
+                  <el-table-column label="免赔额" width="140">
+                  	<template slot-scope="scope">
+                  		<el-input-number style="width: 100%;" v-model="scope.row.deductAddAmt" :precision="2" :min="0" :controls="false" :disabled="settlementStatus"></el-input-number>
+                      <span v-if="isNaN(scope.row.deductAddAmt)" style="margin-top: 2px;font-size: 10px;color: #F56C6C;float: left;">免赔额不能为空</span>
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="sumAmt" label="理算金额" width="140">
+                  </el-table-column>
+                  <el-table-column label="赔付金额" width="140">
+                  	<template slot-scope="scope">
+                  		<el-input-number style="width: 100%;" v-model="scope.row.sumRealPay" :precision="2" :min="0" :controls="false" :disabled="settlementStatus"></el-input-number>
+                      <!-- <span v-if="isNaN(scope.row.sumRealPay)" style="margin-top: 2px;font-size: 10px;color: #F56C6C;float: left;">赔付金额不能为空</span> -->
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="操作" width="100">
+                  	<template slot-scope="scope">
+                  		<el-button size="small" icon="el-icon-delete" type="danger" @click="delLossProp(scope.$index)" :disabled="settlementStatus"></el-button>
+                  	</template>
+                  </el-table-column>
+                </el-table>
+              </template>
+              <el-col :span="24" class="toolbar" style="background: #fff;">
+              	<el-button icon="el-icon-plus" size="small" type="primary" @click.native="addLossPerson" :disabled="settlementStatus"></el-button>
+              </el-col>
+            </el-collapse-item>
+          </el-card>
 					<el-card id="card3" shadow="hover" style="margin-top: 20px;">
 						<el-collapse-item name="3">
 							<template slot="title">
@@ -384,7 +508,13 @@
 				  :before-close="clossDialog2"
 				  >
 					<div style="height: 400px;">
-						<el-table :data="paymentList" highlight-current-row style="width: 100%;" border :cell-style="cellClass" :header-cell-style="headCellClass">
+            <el-row style="line-height: 40px;">
+              <el-col :span="2">总金额</el-col>
+              <el-col :span="3">
+                <el-input v-model="form.sumRealPay" disabled></el-input>
+              </el-col>
+            </el-row>
+						<el-table :data="paymentList" highlight-current-row style="width: 100%;margin-top: 10px;" border :cell-style="cellClass" :header-cell-style="headCellClass">
 							<el-table-column label="领款人" min-width="180">
 								<template slot-scope="scope">
 									<el-select v-model="scope.row.payeeId" @change="selectPayee(scope.row)" style="width: 100%;">
@@ -579,7 +709,7 @@
 <script>
 	import { initSettlementInfo,initSettlementContent,checkAccountNo,initPayeeList,savePayee,
 	initPaymentList,saveSettlement,submitSettlement,getApproveForSettlement,cancelSettlement,
-	checkSettlementForSubmit,checkSettlementForSave } from '@/api/api';
+	checkSettlementForSubmit,checkSettlementForSave,getDonePersonList,getPersonInfo } from '@/api/api';
 	import { formatTimeToStr} from '@/common/js/date.js';
 	export default {
 		props: ['reportNo','settlementType','settlementNo'],
@@ -602,6 +732,7 @@
 				form: {},
 				lossProp: [],
 				lossCharge: [],
+        lossPerson: [],
 				claimKindP: [],
 				claimKindF: [],
 				paymentList: [],
@@ -619,7 +750,15 @@
 						{ required: true, message: '领款金额不能为空', trigger: 'blur' }
 					]
 				},
-				approveContent: ''
+				approveContent: '',
+        feeTypeList: [
+          {label:"医药费" ,value:"1"},
+          {label:"后续治疗费" ,value:"2"},
+          {label:"伙食补助费" ,value:"3"},
+          {label:"整容费" ,value:"4"},
+          {label:"营养费" ,value:"5"},
+          {label:"其他" ,value:"6"},
+        ],
 			}
 		},
 		methods: {
@@ -709,6 +848,9 @@
 					if(res.data.data.lossCharges) {
 						this.lossCharge = res.data.data.lossCharges;
 					}
+          if(res.data.data.lossPersonList) {
+            this.lossPerson = res.data.data.lossPersonList;
+          }
 					if('0' != this.form.underwriteFlag) {
 						this.settlementStatus = true;
 					}
@@ -720,23 +862,33 @@
 				});
 			},
 			addLossProp() {
-				this.lossProp.push({
-					reportNo: this.reportNo,
-					claimNo: this.form.claimNo,
-					settlementNo: this.form.settlementNo,
-					settlementType: this.settlementType,
-          itemCode: this.claimKindP[0].itemCode,
-          clauseCode: this.claimKindP[0].clauseCode,
-          amount: this.claimKindP[0].amount,
-          deductAddRate: this.claimKindP[0].deductAddRate,
-          deductAddAmt: this.claimKindP[0].deductAddAmt,
-          clauseName: this.claimKindP[0].clauseName,
-          itemName: this.claimKindP[0].itemName,
-          sumLoss: this.claimKindP[0].sumEstiPaid,
-          sumLossChecked: this.claimKindP[0].sumEstiPaid,
-          sumRealPay: this.claimKindP[0].sumEstiPaid,
-					claimRate: 100
-				})
+        if(this.lossProp.length == 0) {
+          this.lossProp.push({
+          	reportNo: this.reportNo,
+          	claimNo: this.form.claimNo,
+          	settlementNo: this.form.settlementNo,
+          	settlementType: this.settlementType,
+            itemCode: this.claimKindP[0].itemCode,
+            clauseCode: this.claimKindP[0].clauseCode,
+            amount: this.claimKindP[0].amount,
+            deductAddRate: this.claimKindP[0].deductAddRate,
+            deductAddAmt: this.claimKindP[0].deductAddAmt,
+            clauseName: this.claimKindP[0].clauseName,
+            itemName: this.claimKindP[0].itemName,
+            sumLoss: this.claimKindP[0].sumEstiPaid,
+            sumLossChecked: this.claimKindP[0].sumEstiPaid,
+            // sumRealPay: this.claimKindP[0].sumEstiPaid,
+          	claimRate: 100
+          })
+        } else {
+          this.lossProp.push({
+          	reportNo: this.reportNo,
+          	claimNo: this.form.claimNo,
+          	settlementNo: this.form.settlementNo,
+          	settlementType: this.settlementType,
+          	claimRate: 100
+          })
+        }
 			},
 			addLossCharge() {
         let payObject = '';
@@ -751,19 +903,89 @@
         	payObject = '4';
         }
 
-				this.lossCharge.push({
-					reportNo: this.reportNo,
-					claimNo: this.form.claimNo,
-					settlementNo: this.form.settlementNo,
-					settlementType: this.settlementType,
-          clauseCode: this.claimKindF[0].clauseCode,
-          costType: this.claimKindF[0].costType,
-          clauseName: this.claimKindF[0].clauseName,
-          sumLoss: this.claimKindF[0].sumEstiFee,
-          sumRealPay: this.claimKindF[0].sumEstiFee,
-          payObject: payObject
-				})
+        if(this.lossCharge.length == 0) {
+          this.lossCharge.push({
+          	reportNo: this.reportNo,
+          	claimNo: this.form.claimNo,
+          	settlementNo: this.form.settlementNo,
+          	settlementType: this.settlementType,
+            clauseCode: this.claimKindF[0].clauseCode,
+            costType: this.claimKindF[0].costType,
+            clauseName: this.claimKindF[0].clauseName,
+            sumLoss: this.claimKindF[0].sumEstiFee,
+            sumRealPay: this.claimKindF[0].sumEstiFee,
+            payObject: payObject
+          })
+        } else {
+          this.lossCharge.push({
+          	reportNo: this.reportNo,
+          	claimNo: this.form.claimNo,
+          	settlementNo: this.form.settlementNo,
+          	settlementType: this.settlementType
+          })
+        }
 			},
+      addLossPerson() {
+        this.lossPerson.push({
+          reportNo: this.reportNo,
+          claimNo: this.form.claimNo,
+          settlementNo: this.form.settlementNo,
+          settlementType: this.settlementType,
+          sex: '',
+          age: '',
+          identifyType: '',
+          identifyNo: '',
+          sumAmt: '',
+          lossPersonFee: []
+        })
+      },
+      queryPerson(queryString, cb) {
+        let params = {
+          reportNo: this.reportNo,
+          queryString: queryString
+        }
+        getDonePersonList(params).then(res => {
+          let restaurants = res.data.data;
+          cb(restaurants);
+        })
+      },
+      selectPerson(item,row) {
+        if(this.lossPerson.filter(item2 => item2.personName == item.value).length > 1) {
+          this.$message.warning("该人伤已存在不能重复选择");
+          row.personName = '';
+          return false;
+        }
+        let params = {
+          personId: item.label
+        }
+        getPersonInfo(params).then(res => {
+          let personMain = res.data.data.personMain;
+          let feeList = res.data.data.feeList;
+          row.reportNo = this.reportNo;
+          row.claimNo = this.form.claimNo;
+          row.settlementNo = this.form.settlementNo;
+          row.settlementType = this.settlementType;
+          row.personId = item.label;
+          row.sex = personMain.sex;
+          row.age = personMain.age;
+          row.identifyType = personMain.identifyType;
+          row.identifyNo = personMain.identifyNo;
+          row.sumAmt = personMain.sumAmt;
+          if(feeList && feeList.length > 0) {
+            feeList.forEach(item => {
+              let data = {
+                reportNo: this.reportNo,
+                settlementNo: this.form.settlementNo,
+                sumLoss: item.claimLoss,
+                sumLossChecked: item.estimateLoss,
+                feeTypeCode: item.feeTypeCode,
+                claimRate: 100
+              }
+              row.lossPersonFee.push(data);
+            })
+          }
+        })
+      },
 			newPayment() {
 				this.paymentList.push({
 					reportNo: this.reportNo,
@@ -771,6 +993,12 @@
 				})
 			},
 			selectPayee(row) {
+        let payeeId = row.payeeId;
+        if(this.paymentList.filter(item => item.payeeId == payeeId).length > 1) {
+          this.$message.warning("该领款人已分配不能重复选择");
+          row.payeeId = '';
+          return false;
+        }
 				this.payeeList.forEach(item => {
 					if(item.id == row.payeeId) {
 						row.payeeInfo = item;
@@ -780,6 +1008,11 @@
 			eventItem(row) {
 				let itemCode = row.itemCode;
 				let clauseCode = row.clauseCode;
+        if(this.lossProp.filter(item => (item.clauseCode == clauseCode && item.itemCode == itemCode)).length > 1) {
+          this.$message.warning("该条款损失已存在不能重复选择");
+          row.itemCode = '';
+          return false;
+        }
 				this.claimKindP.forEach(item => {
 					if(item.clauseCode == clauseCode && item.itemCode == itemCode) {
 						row.amount = item.amount;
@@ -789,7 +1022,7 @@
 						row.itemName = item.itemName;
 						row.sumLoss = item.sumEstiPaid;
 						row.sumLossChecked = item.sumEstiPaid;
-						row.sumRealPay = item.sumEstiPaid;
+						// row.sumRealPay = item.sumEstiPaid;
 						return;
 					}
 				});
@@ -799,6 +1032,11 @@
 				let costType = row.costType;
 				row.sumLoss = 0;
 				row.sumRealPay = 0;
+        if(this.lossCharge.filter(item => (item.clauseCode == clauseCode && item.costType == costType)).length > 1) {
+          this.$message.warning("该条款费用已存在不能重复选择");
+          row.costType = '';
+          return false;
+        }
 				this.claimKindF.forEach(item => {
 					if(item.clauseCode == clauseCode) {
 						row.clauseName = item.clauseName;
@@ -819,6 +1057,21 @@
 					row.payObject = '4';
 				}
 			},
+      eventItem3(row) {
+      	let itemCode = row.itemCode;
+      	let clauseCode = row.clauseCode;
+      	this.claimKindP.forEach(item => {
+      		if(item.clauseCode == clauseCode && item.itemCode == itemCode) {
+      			row.amount = item.amount;
+      			row.deductAddRate = item.deductAddRate;
+      			row.deductAddAmt = item.deductAddAmt;
+      			row.clauseName = item.clauseName;
+      			row.itemName = item.itemName;
+      			// row.sumRealPay = row.sumLossChecked;
+      			return;
+      		}
+      	});
+      },
 			delLossProp(index) {
 				this.$confirm('是否删除该损失?', '提示', {
 					confirmButtonText: '确定',
@@ -847,6 +1100,20 @@
 					});
 				});
 			},
+      delLossPerson(index) {
+      	this.$confirm('是否删除该损失?', '提示', {
+      		confirmButtonText: '确定',
+      		cancelButtonText: '取消',
+      		type: 'warning'
+      	}).then(() => {
+      		this.lossPerson.splice(index,1);
+      	}).catch(() => {
+      		this.$message({
+      			type: 'info',
+      			message: '已取消删除'
+      		});
+      	});
+      },
 			delPayment(index) {
 				this.$confirm('是否删除该领款人?', '提示', {
 					confirmButtonText: '确定',
@@ -862,17 +1129,19 @@
 				});
 			},
 			getContent() {
-        if(this.checkLoss()) {
+        if(this.checkLoss(false)) {
           let params = {
           	settlementMain: this.form,
           	lossProps: this.lossProp,
-          	lossCharges: this.lossCharge
+          	lossCharges: this.lossCharge,
+            lossPersonList: this.lossPerson
           };
           this.loading = true;
           initSettlementContent(params).then((res) => {
           	this.form = res.data.data.settlementMain;
           	this.lossProp = res.data.data.lossProps;
           	this.lossCharge = res.data.data.lossCharges;
+            this.lossPerson = res.data.data.lossPersonList;
           	setTimeout(() => {
           		this.loading = false;
           	},500);
@@ -1022,6 +1291,10 @@
 				this.getPayeeList();
 			},
 			handleSave() {
+        if(!this.form.content) {
+        	this.$message.warning('请先生成理算报告');
+          return false;
+        }
         let params1 = {
         	reportNo:this.reportNo,
         	settlementType: this.settlementType,
@@ -1031,12 +1304,13 @@
           if(res.data.data.status == '0') {
           	this.$message.warning(res.data.data.msg);
           } else {
-            if(this.checkRules()) {
+            if(this.checkLoss(true) && this.checkRules()) {
               let params = {
               	settlementMain: this.form,
               	paymentList: this.paymentList,
               	lossProps: this.lossProp,
-              	lossCharges: this.lossCharge
+              	lossCharges: this.lossCharge,
+                lossPersonList: this.lossPerson
               }
               saveSettlement(params).then((res) => {
               	if(res) {
@@ -1050,6 +1324,10 @@
         })
 			},
 			handleSubmit() {
+        if(!this.form.content) {
+        	this.$message.warning('请先生成理算报告');
+          return false;
+        }
         let params1 = {
         	reportNo:this.reportNo,
         	settlementType: this.settlementType,
@@ -1059,12 +1337,13 @@
           if(res.data.data.status == '0') {
           	this.$message.warning(res.data.data.msg);
           } else {
-            if(this.checkRules()) {
+            if(this.checkLoss(true) && this.checkRules()) {
               let params = {
               	settlementMain: this.form,
               	paymentList: this.paymentList,
               	lossProps: this.lossProp,
-              	lossCharges: this.lossCharge
+              	lossCharges: this.lossCharge,
+                lossPersonList: this.lossPerson
               }
               checkSettlementForSubmit(params).then((res) => {
               	if(res.data.data.status == '0') {
@@ -1102,11 +1381,26 @@
 					this.$message.info('已取消');
 				});
 			},
-      checkLoss() {
+      checkLoss(checkPay) {
         let flag = true;
         if(this.lossCharge && this.lossCharge.length > 0) {
           this.lossCharge.forEach(item => {
-            if(!item.sumRealPay) {
+            if(!item.clauseCode) {
+              this.$message.warning("条款-险别不能为空");
+              flag = false;
+              return false;
+            }
+            if(!item.costType) {
+              this.$message.warning("费用类型不能为空");
+              flag = false;
+              return false;
+            }
+            if(!item.payObject) {
+              this.$message.warning("支付对象不能为空");
+              flag = false;
+              return false;
+            }
+            if(checkPay && isNaN(item.sumRealPay)) {
               this.$message.warning("赔付金额不能为空");
               flag = false;
               return false;
@@ -1115,6 +1409,21 @@
         }
         if(this.lossProp && this.lossProp.length > 0) {
           this.lossProp.forEach(item => {
+            if(!item.clauseCode) {
+              this.$message.warning("条款-险别不能为空");
+              flag = false;
+              return false;
+            }
+            if(!item.itemCode) {
+              this.$message.warning("损失类型不能为空");
+              flag = false;
+              return false;
+            }
+            if(isNaN(item.sumLossChecked)) {
+              this.$message.warning("核损金额不能为空");
+              flag = false;
+              return false;
+            }
             if(isNaN(item.sumLossChecked)) {
               this.$message.warning("核损金额不能为空");
               flag = false;
@@ -1135,22 +1444,58 @@
               flag = false;
               return false;
             }
-            if(isNaN(item.sumRealPay)) {
+            if(checkPay && isNaN(item.sumRealPay)) {
               this.$message.warning("赔付金额不能为空");
               flag = false;
               return false;
             }
           });
         }
+        if(this.lossPerson && this.lossPerson.length > 0) {
+          this.lossPerson.forEach(item => {
+            if(!item.personName) {
+              this.$message.warning("人伤基本信息不能为空");
+              flag = false;
+              return false;
+            }
+            item.lossPersonFee.forEach(item2 => {
+              if(!item2.clauseCode) {
+                this.$message.warning("条款-险别不能为空");
+                flag = false;
+                return false;
+              }
+              if(!item2.itemCode) {
+                this.$message.warning("损失类型不能为空");
+                flag = false;
+                return false;
+              }
+              if(isNaN(item2.claimRate)) {
+                this.$message.warning("责任比例不能为空");
+                flag = false;
+                return false;
+              }
+              if(isNaN(item2.deductAddRate)) {
+                this.$message.warning("免赔率不能为空");
+                flag = false;
+                return false;
+              }
+              if(isNaN(item2.deductAddAmt)) {
+                this.$message.warning("免赔额不能为空");
+                flag = false;
+                return false;
+              }
+              if(checkPay && isNaN(item2.sumRealPay)) {
+                this.$message.warning("赔付金额不能为空");
+                flag = false;
+                return false;
+              }
+            })
+          });
+        }
         return flag;
       },
 			checkRules() {
         let flag = true;
-				let content = this.form.content;
-				if(!content) {
-					this.$message.warning("理算报告不能为空");
-					return false;
-				}
 				let paymentList = this.paymentList;
 				if(!paymentList || paymentList.length <= 0) {
 					this.$message.warning("领款人不能为空");
@@ -1169,11 +1514,16 @@
 					this.lossProp.forEach(item => {
 						sumPaid = sumPaid + item.sumRealPay;
 					})
+          this.lossPerson.forEach(item => {
+            item.lossPersonFee.forEach(item2 => {
+              sumPaid = sumPaid + item2.sumRealPay;
+            })
+          })
 					if(isNaN(sumPaid)) {
-						this.$message.warning('财产损失赔付金额不能为空');
+						this.$message.warning('财产/人伤损失赔付金额不能为空');
 						return false;
 					} else if(sumPaid != this.form.sumRealPay) {
-						this.$message.warning('财产损失不等于总金额');
+						this.$message.warning('财产/人伤损失不等于总金额');
 						return false;
 					}
 				} else {

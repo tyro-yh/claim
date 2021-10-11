@@ -95,7 +95,7 @@
 			                <el-button style="float: right; padding: 3px 0" type="text" @click="handleAddTodo">添加</el-button>
 			            </div>
 			        </template>
-			
+
 			        <el-table v-loading="todoListLoading" :show-header="false" :data="todoList" style="width:100%;">
 			            <el-table-column width="40">
 			                <template #default="scope">
@@ -118,17 +118,27 @@
 			    </el-card>
 			</el-col>
 		</el-row>
-		
+
 		<el-card shadow="hover" style="margin-bottom: 20px;">
+      <el-col :span="24" class="toolbar" style="background: #fff;padding-bottom: 0px;">
+      	<el-form :inline="true" :model="filters">
+      		<el-form-item label="报案号">
+      			<el-input v-model="filters.reportNo" placeholder="请输入报案号"></el-input>
+      		</el-form-item>
+      		<el-form-item>
+      			<el-button type="primary" @click="getWorkflow">查询</el-button>
+      		</el-form-item>
+      	</el-form>
+      </el-col>
+
+
 			<!--列表-->
-			<el-table :data="tableData.filter(data => !filters.search || data.businessKey.toLowerCase().includes(filters.search.toLowerCase()))" highlight-current-row v-loading="listLoading" style="width: 100%;" border :cell-style="cellClass" :header-cell-style="headCellClass">
+			<el-table :data="tableData" highlight-current-row v-loading="listLoading" style="width: 100%;" border :cell-style="cellClass" :header-cell-style="headCellClass">
 				<el-table-column type="index" width="60">
 				</el-table-column>
 				<el-table-column prop="reportNo" label="报案号" min-width="120" sortable>
 				</el-table-column>
 				<el-table-column prop="policyNo" label="保单号" min-width="120">
-				</el-table-column>
-				<el-table-column prop="businessKey" label="业务号" min-width="120">
 				</el-table-column>
 				<el-table-column prop="taskType" label="任务类型" width="100">
 				</el-table-column>
@@ -136,28 +146,19 @@
 				</el-table-column>
 				<el-table-column prop="createTime" label="创建时间" width="100" :formatter="formatCreateTime">
 				</el-table-column>
-				<el-table-column
-				  min-width="120">
-				  <template slot="header" slot-scope="scope">
-					<el-input
-					  v-model="filters.search"
-					  size="mini"
-					  placeholder="输入业务号搜索">
-					  <el-button slot="append" icon="el-icon-refresh" @click="getWorkflow"></el-button>
-					</el-input>
-				  </template>
+				<el-table-column label="操作" min-width="80">
 				  <template slot-scope="scope">
 					<el-button
 					  type="primary" size="mini"
 					  @click="showWorkflow(scope.$index, scope.row)"
 					  >流程图</el-button>
-					<el-button
+					<!-- <el-button
 					  size="mini"
-					  @click="handleEdit(scope.$index, scope.row)">查看</el-button>
+					  @click="handleEdit(scope.$index, scope.row)">查看</el-button> -->
 				  </template>
 				</el-table-column>
 			</el-table>
-			
+
 			<!--工具条-->
 			<el-col :span="24" class="toolbar" style="background: #fff;">
 				<el-pagination layout="total, sizes, prev, pager, next, jumper" @size-change="handleSizeChange" @current-change="handleCurrentChange" :page-size="5" :page-sizes="[5, 10, 20]" :total="total" style="float:right;">
@@ -174,7 +175,7 @@
 		data() {
 			return {
 				filters: {
-					search: ''
+					reportNo: ''
 				},
 				todoListLoading: false,
 				sysUserName: '',
@@ -206,13 +207,14 @@
 				this.page = val;
 				this.getWorkflow();
 			},
-			//获取机构列表
+			//获取任务
 			getWorkflow() {
 				let params = Object.assign(
 				{
 					page: this.page,
 					pageSize: this.pageSize,
-				}, JSON.parse(sessionStorage.getItem('user')));
+          reportNo: this.filters.reportNo,
+				}, JSON.parse(localStorage.getItem('user')));
 				this.listLoading = true;
 				//NProgress.start();
 				getMyTask(params).then((res) => {
@@ -263,7 +265,7 @@
 					this.$message({
 						type: 'info',
 						message: '取消输入'
-					});       
+					});
 				});
 			},
 			handleEditTodo(index, row) {
@@ -277,25 +279,25 @@
 				  type: 'warning'
 				}).then(() => {
 				  let params = {
-					id: row.id
+            id: row.id
 				  }
 				  let params2 = {
-					userCode: this.sysUserCode
+            userCode: this.sysUserCode
 				  }
 				  this.todoListLoading = true;
 				  delTodo(params).then(() => {
-					selectTodoList(params2).then((res) => {
-						this.todoList = res.data.data;
-						setTimeout(() =>{
-							this.todoListLoading = false;
-						},500);
-					});
+            selectTodoList(params2).then((res) => {
+              this.todoList = res.data.data;
+              setTimeout(() =>{
+                this.todoListLoading = false;
+              },500);
+            });
 				  });
 				}).catch(() => {
 				  this.$message({
-					type: 'info',
-					message: '已取消删除'
-				  });          
+            type: 'info',
+            message: '已取消删除'
+				  });
 				});
 			},
 			showWorkflow(index, row) {
@@ -308,7 +310,16 @@
 			}
 		},
 		mounted() {
-			let user = sessionStorage.getItem('user');
+      window.addEventListener('storage', event => {
+        if(event.key == 'user') {
+          let nv = JSON.parse(event.newValue);
+          if(nv && (this.sysUserCode != nv.userCode)) {
+            window.location.reload();
+          }
+        }
+      })
+			// let user = sessionStorage.getItem('user');
+			let user = localStorage.getItem('user');
 			if (user) {
 				user = JSON.parse(user);
 				this.sysUserName = user.userName || '';
@@ -343,25 +354,25 @@
 	.el-row {
 	    margin-bottom: 20px;
 	}
-	
+
 	.grid-content {
 	    display: flex;
 	    align-items: center;
 	    height: 100px;
 	}
-	
+
 	.grid-cont-right {
 	    flex: 1;
 	    text-align: center;
 	    font-size: 14px;
 	    color: #999;
 	}
-	
+
 	.grid-num {
 	    font-size: 30px;
 	    font-weight: bold;
 	}
-	
+
 	.grid-con-icon {
 	    font-size: 50px;
 	    width: 100px;
@@ -370,31 +381,31 @@
 	    line-height: 100px;
 	    color: #fff;
 	}
-	
+
 	.grid-con-1 .grid-con-icon {
 	    background: rgb(45, 140, 240);
 	}
-	
+
 	.grid-con-1 .grid-num {
 	    color: rgb(45, 140, 240);
 	}
-	
+
 	.grid-con-2 .grid-con-icon {
 	    background: rgb(100, 213, 114);
 	}
-	
+
 	.grid-con-2 .grid-num {
 	    color: rgb(45, 140, 240);
 	}
-	
+
 	.grid-con-3 .grid-con-icon {
 	    background: rgb(242, 94, 67);
 	}
-	
+
 	.grid-con-3 .grid-num {
 	    color: rgb(242, 94, 67);
 	}
-	
+
 	.user-info {
 	    display: flex;
 	    align-items: center;
@@ -402,43 +413,43 @@
 	    border-bottom: 2px solid #ccc;
 	    margin-bottom: 20px;
 	}
-	
+
 	.user-avator {
 	    width: 120px;
 	    height: 120px;
 	    border-radius: 50%;
 	}
-	
+
 	.user-info-cont {
 	    padding-left: 50px;
 	    flex: 1;
 	    font-size: 14px;
 	    color: #999;
 	}
-	
+
 	.user-info-cont div:first-child {
 	    font-size: 30px;
 	    color: #222;
 	}
-	
+
 	.user-info-list {
 	    font-size: 14px;
 	    color: #999;
 	    line-height: 25px;
 	}
-	
+
 	.user-info-list span {
 	    margin-left: 50px;
 	}
-	
+
 	.mgb20 {
 	    margin-bottom: 20px;
 	}
-	
+
 	.todo-item {
 	    font-size: 14px;
 	}
-	
+
 	.todo-item-del {
 	    text-decoration: line-through;
 	    color: #999;

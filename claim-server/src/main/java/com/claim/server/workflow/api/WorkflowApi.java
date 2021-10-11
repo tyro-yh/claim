@@ -7,10 +7,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.claim.server.common.vo.ApiResponse;
 import com.claim.server.report.dao.BReportMainDao;
 import com.claim.server.report.po.BReportMain;
+import com.claim.server.utils.TaskTypeEnum;
 import com.claim.server.workflow.dao.BWorkflowDao;
 import com.claim.server.workflow.po.BWorkflow;
 import com.claim.server.workflow.service.WorkflowService;
 import com.claim.server.workflow.vo.NodeItem;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,10 +40,17 @@ public class WorkflowApi {
     public IPage myTask(@RequestBody JSONObject params) {
         QueryWrapper<BWorkflow> wrapper =  new QueryWrapper<>();
         wrapper.eq("handler",params.getString("userCode"));
+        String reportNo = params.getString("reportNo");
+        if (StringUtils.isNotBlank(reportNo)) {
+            wrapper.eq("reportNo",reportNo);
+        }
         Page<BWorkflow> page = new Page<>();
         page.setCurrent(params.getLong("page"));
         page.setSize(params.getLong("pageSize"));
         IPage<BWorkflow> result = bWorkflowDao.selectPage(page,wrapper);
+        for (BWorkflow workflow : result.getRecords()) {
+            workflow.setTaskType(TaskTypeEnum.valueOf(workflow.getTaskType().split("_")[0]).getName());
+        }
         return result;
     }
 

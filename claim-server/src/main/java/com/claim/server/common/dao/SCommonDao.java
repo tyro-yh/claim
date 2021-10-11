@@ -21,6 +21,8 @@ public interface SCommonDao extends BaseMapper<SCommon> {
 
     List<Map> getCertifyList();
 
+    List<Map> getDiagnosisList(@Param(value = "queryString") String queryString);
+
     List<Map> selectByDataType(@Param(value = "dataTypeCode") String dataTypeCode);
 
     String selectByDataTypeAndCode(@Param(value = "dataTypeCode") String dataTypeCode,@Param(value = "dataCode") String dataCode);

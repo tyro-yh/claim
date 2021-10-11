@@ -60,7 +60,7 @@
 			}
 		},
 		mounted() {
-			let user = sessionStorage.getItem('user');
+			let user = localStorage.getItem('user');
 			if(user) {
 				this.user = JSON.parse(user);
 			}

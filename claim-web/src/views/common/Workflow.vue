@@ -71,7 +71,15 @@
 		created() { //不能在created方法中初始化
 		},
 		mounted(){
-			let user = sessionStorage.getItem('user');
+      window.addEventListener('storage', event => {
+        if(event.key == 'user') {
+          let nv = JSON.parse(event.newValue);
+          if(nv && (this.sysUserCode != nv.userCode)) {
+            window.location.reload();
+          }
+        }
+      })
+			let user = localStorage.getItem('user');
 			if (user) {
 				user = JSON.parse(user);
 				this.sysUserCode = user.userCode || '';
@@ -277,7 +285,7 @@
 				setTimeout(() => {
 					this.graphloading = false;
 				},500);
-				
+
 				graph.on('text-link:click', evt => {
 					let model = evt.item._cfg.model;
 					if(this.sysUserCode != model.meta.handler && model.meta.params.taskStatus == '1') {
@@ -288,7 +296,8 @@
 						name: model.meta.taskType,
 						params: {
 							businessKey:model.meta.params.businessKey,
-							reportNo:model.meta.params.reportNo
+							reportNo:model.meta.params.reportNo,
+              handler:model.meta.handler
 						}
 					});
 					window.open(routeUrl.href, '_blank');

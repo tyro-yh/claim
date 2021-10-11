@@ -32,7 +32,7 @@
 			</el-table-column>
 			<el-table-column prop="sumLossChecked" label="核损金额" width="140">
 			</el-table-column>
-			<el-table-column prop="claimRate" label="责任比例(%)" width="100" style="display: inline;">
+			<el-table-column prop="claimRate" label="责任比例(%)" width="100">
 			</el-table-column>
 			<el-table-column prop="deductAddRate" label="免赔率(%)" width="100">
 			</el-table-column>

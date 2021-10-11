@@ -2,34 +2,37 @@
 	<el-container>
 		<el-aside width="150px">
 			<el-col>
-				<el-card shadow="hover" style="margin-top: 20px;">
+				<el-card shadow="hover" style="margin-top: 20px;height: 55px;">
 					<el-link :underline="false" href="#card1">保单基本信息</el-link>
 				</el-card>
-				<el-card shadow="hover" style="margin-top: 2px;">
+				<el-card shadow="hover" style="margin-top: 2px;height: 55px;">
 					<el-link :underline="false" href="#card2">报案基本信息</el-link>
 				</el-card>
-				<el-card shadow="hover" style="margin-top: 2px;">
+				<el-card shadow="hover" style="margin-top: 2px;height: 55px;">
 					<el-link :underline="false" href="#card3">立案基本信息</el-link>
 				</el-card>
-				<el-card shadow="hover" style="margin-top: 2px;">
+				<el-card shadow="hover" style="margin-top: 2px;height: 55px;">
 					<el-link :underline="false" href="#card4">理算基本信息</el-link>
 				</el-card>
-				<el-card shadow="hover" style="margin-top: 2px;" v-if="settlementMain.settlementType != 'F'">
+				<el-card shadow="hover" style="margin-top: 2px;height: 55px;" v-if="settlementMain.settlementType != 'F'">
 					<el-link :underline="false" href="#card5">财产损失信息</el-link>
 				</el-card>
-				<el-card shadow="hover" style="margin-top: 2px;" v-if="settlementMain.settlementType == 'F'">
+        <el-card shadow="hover" style="margin-top: 2px;height: 55px;" v-if="settlementMain.settlementType != 'F'">
+        	<el-link :underline="false" href="#card10">人伤损失信息</el-link>
+        </el-card>
+				<el-card shadow="hover" style="margin-top: 2px;height: 55px;" v-if="settlementMain.settlementType == 'F'">
 					<el-link :underline="false" href="#card6">理赔费用信息</el-link>
 				</el-card>
-				<el-card shadow="hover" style="margin-top: 2px;">
+				<el-card shadow="hover" style="margin-top: 2px;height: 55px;">
 					<el-link :underline="false" href="#card7">理算报告</el-link>
 				</el-card>
-				<el-card shadow="hover" style="margin-top: 2px;">
+				<el-card shadow="hover" style="margin-top: 2px;height: 55px;">
 					<el-link :underline="false" href="#card8">收款人信息</el-link>
 				</el-card>
-				<el-card shadow="hover" style="margin-top: 2px;">
+				<el-card shadow="hover" style="margin-top: 2px;height: 55px;">
 					<el-link :underline="false" href="#card9">金额汇总</el-link>
 				</el-card>
-				<el-card shadow="hover" style="margin-top: 2px;">
+				<el-card shadow="hover" style="margin-top: 2px;height: 55px;">
 					<el-link :underline="false" href="#card11">审核信息</el-link>
 				</el-card>
 			</el-col>
@@ -77,6 +80,14 @@
 							<BaseProp :lossProps="lossProps" :claimKindP="claimKindP"/>
 						</el-collapse-item>
 					</el-card>
+          <el-card id="card10" shadow="hover" style="margin-top: 20px;" v-if="settlementMain.settlementType != 'F'">
+          	<el-collapse-item name="10">
+          		<template slot="title">
+          			<span style="font-size: 16px;font-weight: 700;color: #303133;">人伤损失信息</span>
+          		</template>
+          		<BasePerson :lossPerson="lossPerson" :claimKindP="claimKindP"/>
+          	</el-collapse-item>
+          </el-card>
 					<el-card id="card6" shadow="hover" style="margin-top: 20px;" v-if="settlementMain.settlementType == 'F'">
 						<el-collapse-item name="6">
 							<template slot="title">
@@ -170,7 +181,7 @@
 							<template slot="title">
 								<span style="font-size: 16px;font-weight: 700;color: #303133;">审核信息</span>
 							</template>
-							<BaseApprove :businessKey="businessKey"/>
+							<BaseApprove :businessKey="businessKey" :handler="handler"/>
 						</el-collapse-item>
 					</el-card>
 				</el-collapse>
@@ -189,8 +200,9 @@
 	import BaseProp from '@/views/undwrt/BaseProp.vue';
 	import BaseCharge from '@/views/undwrt/BaseCharge.vue';
 	import BasePayment from '@/views/undwrt/BasePayment.vue';
+  import BasePerson from '@/views/undwrt/BasePerson.vue';
 	export default {
-		props: ['businessKey','reportNo'],
+		props: ['businessKey','reportNo','handler'],
 		components: {
 			BasePolicy,
 			BaseReport,
@@ -199,7 +211,8 @@
 			BaseApprove,
 			BaseProp,
 			BaseCharge,
-			BasePayment
+			BasePayment,
+      BasePerson
 		},
 		data() {
 			return {
@@ -210,6 +223,7 @@
 				claimKindP: [],
 				claimKindF: [],
 				paymentList: [],
+        lossPerson: []
 			}
 		},
 		methods: {
@@ -229,6 +243,9 @@
 					if(res.data.data.lossCharges) {
 						this.lossCharges = res.data.data.lossCharges;
 					}
+          if(res.data.data.lossPersonList) {
+            this.lossPerson = res.data.data.lossPersonList;
+          }
 				});
 			}
 		},

@@ -28,6 +28,14 @@
         SELECT DataCode AS 'value',DataName AS 'label' FROM s_common WHERE ValidStatus = '1' AND DataTypeCode = 'certify'
     </select>
 
+    <select id="getDiagnosisList" resultType="map" parameterType="string">
+        SELECT DataName AS 'value',DataCode AS 'label' FROM s_common WHERE ValidStatus = '1' AND DataTypeCode = 'diagnosis'
+        <if test="queryString != null" >
+            AND DataName LIKE "%"#{queryString}"%"
+        </if>
+        limit 10
+    </select>
+
     <select id="selectByDataType" resultType="map" parameterType="string">
         SELECT DataCode AS 'value',DataName AS 'label' FROM s_common WHERE ValidStatus = '1'
         AND DataTypeCode = #{dataTypeCode}

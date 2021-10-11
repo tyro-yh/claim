@@ -22,12 +22,8 @@ import com.claim.server.process.po.SProcessNode;
 import com.claim.server.process.service.ProcessService;
 import com.claim.server.report.dao.BReportMainDao;
 import com.claim.server.report.po.BReportMain;
-import com.claim.server.settlement.dao.BLossChargeDao;
-import com.claim.server.settlement.dao.BLossPropDao;
-import com.claim.server.settlement.dao.BSettlementMainDao;
-import com.claim.server.settlement.po.BLossCharge;
-import com.claim.server.settlement.po.BLossProp;
-import com.claim.server.settlement.po.BSettlementMain;
+import com.claim.server.settlement.dao.*;
+import com.claim.server.settlement.po.*;
 import com.claim.server.settlement.service.SettlementService;
 import com.claim.server.settlement.vo.SettlementFormVo;
 import com.claim.server.utils.*;
@@ -42,6 +38,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class SettlementServiceImpl implements SettlementService {
@@ -94,6 +91,12 @@ public class SettlementServiceImpl implements SettlementService {
     @Autowired
     private EndCaseService endCaseService;
 
+    @Autowired
+    private BLossPersonDao bLossPersonDao;
+
+    @Autowired
+    private BLossPersonFeeDao bLossPersonFeeDao;
+
     @Override
     public Map createSettlementInfo(String reportNo,String settlementType) {
         Map map = new HashMap();
@@ -142,6 +145,13 @@ public class SettlementServiceImpl implements SettlementService {
         List<BLossCharge> lossCharges = bLossChargeDao.selectBySettlementNo(settlementNo);
         map.put("lossCharges",lossCharges);
 
+        List<BLossPerson> lossPersonList = bLossPersonDao.selectBySettlementNo(settlementNo);
+        for (BLossPerson lossPerson : lossPersonList) {
+            List<BLossPersonFee> feeList = bLossPersonFeeDao.selectByLossPersonId(lossPerson.getId());
+            lossPerson.setLossPersonFee(feeList);
+        }
+        map.put("lossPersonList",lossPersonList);
+
         return map;
     }
 
@@ -150,15 +160,16 @@ public class SettlementServiceImpl implements SettlementService {
         BSettlementMain settlementMain = params.getSettlementMain();
         List<BLossProp> lossProps = params.getLossProps();
         List<BLossCharge> lossCharges = params.getLossCharges();
+        List<BLossPerson> lossPersonList = params.getLossPersonList();
         StringBuffer content = new StringBuffer();
         content.append("*****《理算报告》*****\n");
         content.append("理算情况：\n");
-        //赔款或费用理算书
+        //赔款或预赔理算书
         if (!"F".equals(settlementMain.getSettlementType())) {
             BigDecimal sumls = BigDecimal.ZERO;
             BigDecimal sumpf = BigDecimal.ZERO;
             for (BLossProp lossProp : lossProps) {
-                content.append("赔付损失项："+lossProp.getClauseName()+"-"+lossProp.getItemName()+"\n");
+                content.append("赔付财产损失项："+lossProp.getClauseName()+"-"+lossProp.getItemName()+"\n");
                 content.append("计算公式：（核损金额*责任比例-免赔额）*（1-免赔率）= 理算金额\n");
                 BigDecimal sumAmt = (lossProp.getSumLossChecked().multiply(lossProp.getClaimRate().divide(new BigDecimal(100))).subtract(lossProp.getDeductAddAmt())).multiply((new BigDecimal(1).subtract(lossProp.getDeductAddRate().divide(new BigDecimal(100)))));
                 content.append("    （"+lossProp.getSumLossChecked()+"*"+lossProp.getClaimRate()+"%-"+lossProp.getDeductAddAmt()+"）*（1-"+lossProp.getDeductAddRate()+"%）="+sumAmt.setScale(2,BigDecimal.ROUND_HALF_UP)+"\n");
@@ -168,8 +179,35 @@ public class SettlementServiceImpl implements SettlementService {
                     lossProp.setSumRealPay(sumAmt);
                 }
                 sumpf = sumpf.add(lossProp.getSumRealPay());
-                content.append("赔付损失金额：理算金额为 "+sumAmt+" 赔付金额为 "+lossProp.getSumRealPay()+"\n\n");
+                content.append("赔付财产损失金额：理算金额为 "+sumAmt+" 赔付金额为 "+lossProp.getSumRealPay()+"\n\n");
             }
+
+            for (BLossPerson lossPerson : lossPersonList) {
+                for (BLossPersonFee lossPersonFee : lossPerson.getLossPersonFee()) {
+                    String feeTypeName = "";
+                    switch (lossPersonFee.getFeeTypeCode()) {
+                        case "1": feeTypeName = "医药费";break;
+                        case "2": feeTypeName = "后续治疗费";break;
+                        case "3": feeTypeName = "伙食补助费";break;
+                        case "4": feeTypeName = "整容费";break;
+                        case "5": feeTypeName = "营养费";break;
+                        case "6": feeTypeName = "其他";break;
+                        default: feeTypeName = "未知";
+                    }
+                    content.append("赔付人伤损失项："+lossPerson.getPersonName()+"-"+lossPersonFee.getClauseName()+"-"+lossPersonFee.getItemName()+"-"+feeTypeName+"\n");
+                    content.append("计算公式：（核损金额*责任比例-免赔额）*（1-免赔率）= 理算金额\n");
+                    BigDecimal sumAmt = (lossPersonFee.getSumLossChecked().multiply(lossPersonFee.getClaimRate().divide(new BigDecimal(100))).subtract(lossPersonFee.getDeductAddAmt())).multiply((new BigDecimal(1).subtract(lossPersonFee.getDeductAddRate().divide(new BigDecimal(100)))));
+                    content.append("    （"+lossPersonFee.getSumLossChecked()+"*"+lossPersonFee.getClaimRate()+"%-"+lossPersonFee.getDeductAddAmt()+"）*（1-"+lossPersonFee.getDeductAddRate()+"%）="+sumAmt.setScale(2,BigDecimal.ROUND_HALF_UP)+"\n");
+                    lossPersonFee.setSumAmt(sumAmt);
+                    sumls = sumls.add(sumAmt);
+                    if (lossPersonFee.getSumRealPay() == null) {
+                        lossPersonFee.setSumRealPay(sumAmt);
+                    }
+                    sumpf = sumpf.add(lossPersonFee.getSumRealPay());
+                    content.append("赔付人伤损失金额：理算金额为 "+sumAmt+" 赔付金额为 "+lossPersonFee.getSumRealPay()+"\n\n");
+                }
+            }
+
             content.append("本次赔付总额：理算金额为 "+sumls+" 赔付金额为 "+sumpf);
             settlementMain.setSumAmt(sumls);
             //todo 预赔扣除逻辑
@@ -227,6 +265,17 @@ public class SettlementServiceImpl implements SettlementService {
             bLossPropDao.deleteBySettlementNo(reportNo,settlementNo);
             for (BLossProp prop : propList) {
                 bLossPropDao.insert(prop);
+            }
+
+            List<BLossPerson> personList = vo.getLossPersonList();
+            bLossPersonDao.deleteBySettlementNo(reportNo,settlementNo);
+            bLossPersonFeeDao.deleteBySettlementNo(reportNo,settlementNo);
+            for (BLossPerson person : personList) {
+                bLossPersonDao.insert(person);
+                for (BLossPersonFee personFee : person.getLossPersonFee()) {
+                    personFee.setLossPersonId(person.getId());
+                    bLossPersonFeeDao.insert(personFee);
+                }
             }
         }
 
@@ -507,8 +556,41 @@ public class SettlementServiceImpl implements SettlementService {
         BSettlementMain bSettlementMain = params.getSettlementMain();
         String reportNo = bSettlementMain.getReportNo();
         if (!SettlementTypeEnum.F.getCode().equals(bSettlementMain.getSettlementType())) {
-            List<BLossProp> list = params.getLossProps();
-            for (BLossProp prop : list) {
+            List<BClaimClause> clauseList = bClaimClauseDao.selectByReportNoAndFeeType(reportNo,"P");
+            for (BClaimClause clause : clauseList) {
+                BigDecimal amount = clause.getAmount();
+                BigDecimal sumHasPaidProp = bLossPropDao.getSumHasPaid(reportNo,clause.getClauseCode(),clause.getItemCode());
+                BigDecimal sumHasPaidPerson = bLossPersonFeeDao.getSumHasPaid(reportNo,clause.getClauseCode(),clause.getItemCode());
+                BigDecimal propPay = BigDecimal.ZERO;
+                if (params.getLossProps() != null && params.getLossProps().size() > 0) {
+                    List<BLossProp> propList = params.getLossProps().stream()
+                            .filter(e -> e.getClauseCode().equals(clause.getClauseCode()) && e.getItemCode().equals(clause.getItemCode()))
+                            .collect(Collectors.toList());
+                    for (BLossProp prop : propList) {
+                        propPay = propPay.add(prop.getSumRealPay());
+                    }
+                }
+
+                BigDecimal personPay = BigDecimal.ZERO;
+                List<BLossPerson> personList = params.getLossPersonList();
+                for (BLossPerson person : personList) {
+                    if (person.getLossPersonFee() != null && person.getLossPersonFee().size() > 0) {
+                        List<BLossPersonFee> feeList = person.getLossPersonFee().stream()
+                                .filter(e -> e.getClauseCode().equals(clause.getClauseCode()) && e.getItemCode().equals(clause.getItemCode()))
+                                .collect(Collectors.toList());
+                        for (BLossPersonFee fee : feeList) {
+                            personPay = personPay.add(fee.getSumRealPay());
+                        }
+                    }
+                }
+                BigDecimal sumPaid = sumHasPaidProp.add(sumHasPaidPerson).add(propPay).add(personPay);
+                if (sumPaid.compareTo(amount) > 0) {
+                    map.put("status","0");
+                    map.put("msg","条款 "+clause.getClauseName()+"-"+clause.getItemName()+" 超限额，不能提交");
+                    return map;
+                }
+            }
+            /*for (BLossProp prop : list) {
                 BClaimClause clause = bClaimClauseDao.selectByClauseCodeAndItemCode(reportNo,prop.getClauseCode(),prop.getItemCode());
                 BigDecimal amount = clause.getAmount();
                 BigDecimal sumHasPaidProp = bLossPropDao.getSumHasPaid(reportNo,prop.getClauseCode(),prop.getItemCode());
@@ -518,7 +600,7 @@ public class SettlementServiceImpl implements SettlementService {
                     map.put("msg","条款 "+clause.getClauseName()+"-"+clause.getItemName()+" 超限额，不能提交");
                     return map;
                 }
-            }
+            }*/
             BPolicyMain bPolicyMain = bPolicyMainDao.selectByReportNo(reportNo);
             BigDecimal policyAmount = bPolicyMain.getSumAmount();
             BigDecimal sumHasPaid = bSettlementMainDao.getSumHasPaid(reportNo);

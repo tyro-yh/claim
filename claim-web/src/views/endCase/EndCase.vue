@@ -99,7 +99,7 @@
 							<template slot="title">
 								<span style="font-size: 16px;font-weight: 700;color: #303133;">审核信息</span>
 							</template>
-							<BaseApprove :businessKey="businessKey"/>
+							<BaseApprove :businessKey="businessKey" :handler="handler"/>
 						</el-collapse-item>
 					</el-card>
 				</el-collapse>
@@ -113,7 +113,7 @@
 	import BaseApprove from '@/views/claim/BaseApprove.vue';
 	import { formatTimeToStr} from '@/common/js/date.js';
 	export default {
-		props: ['businessKey','reportNo'],
+		props: ['businessKey','reportNo','handler'],
 		components: {
 			BaseApprove
 		},

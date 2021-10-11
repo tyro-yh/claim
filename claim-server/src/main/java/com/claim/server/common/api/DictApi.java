@@ -191,6 +191,18 @@ public class DictApi {
         return new ApiResponse(list);
     }
 
+    @RequestMapping(value = "/getDiagnosisList",method = RequestMethod.POST)
+    public ApiResponse getDiagnosisList(@RequestBody JSONObject params) {
+        List<Map> list = sCommonDao.getDiagnosisList(params.getString("queryString"));
+        return new ApiResponse(list);
+    }
+
+    @RequestMapping(value = "/getHandlerList",method = RequestMethod.POST)
+    public ApiResponse getHandlerList(@RequestBody JSONObject params) {
+        List<Map> list = sUserDao.getHandlerList(params.getString("queryString"));
+        return new ApiResponse(list);
+    }
+
     @RequestMapping(value = "editCommon",method = RequestMethod.POST)
     public ApiResponse editCommon(@RequestBody SCommon params) {
         sCommonDao.updateById(params);

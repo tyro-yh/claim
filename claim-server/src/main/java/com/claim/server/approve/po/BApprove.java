@@ -32,6 +32,9 @@ public class BApprove implements Serializable {
     @TableField(value = "EndCaseId")
     private Integer endCaseId;
 
+    @TableField(value = "PersonId")
+    private Integer personId;
+
     @TableField(value = "ApproveFlag")
     private String approveFlag;
 

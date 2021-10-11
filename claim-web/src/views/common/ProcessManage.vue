@@ -9,6 +9,7 @@
 							<el-option label="立案审核" value="ClaimApprove"></el-option>
 							<el-option label="理算审核" value="Undwrt"></el-option>
 							<el-option label="结案审核" value="EndCase"></el-option>
+							<el-option label="人伤跟踪审核" value="PersonApprove"></el-option>
 						</el-select>
 					</el-form-item>
 					<el-form-item>
@@ -46,6 +47,7 @@
 							<el-option label="立案审核" value="ClaimApprove"></el-option>
 							<el-option label="理算审核" value="Undwrt"></el-option>
 							<el-option label="结案审核" value="EndCase"></el-option>
+							<el-option label="人伤跟踪审核" value="PersonApprove"></el-option>
 						</el-select>
 					</el-form-item>
 					<el-form-item label="流程标题">
@@ -97,7 +99,8 @@
 		  <el-select v-model="filters.dataType">
 		  	<el-option label="立案审核" value="ClaimApprove"></el-option>
 		  	<el-option label="理算审核" value="Undwrt"></el-option>
-			<el-option label="结案审核" value="EndCase"></el-option>
+        <el-option label="结案审核" value="EndCase"></el-option>
+        <el-option label="人伤跟踪审核" value="PersonApprove"></el-option>
 		  </el-select>
 		  <span slot="footer" class="dialog-footer">
 		    <el-button @click="dialogVisible = false">取 消</el-button>
@@ -144,6 +147,7 @@
 					case 'ClaimApprove': typeName = '立案审核';break;
 					case 'Undwrt': typeName = '理算审核';break;
 					case 'EndCase': typeName = '结案审核';break;
+					case 'PersonApprove': typeName = '人伤跟踪审核';break;
 				};
 				return typeName;
 			},

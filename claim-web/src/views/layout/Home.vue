@@ -56,7 +56,7 @@
 			next();
 		},
 		mounted() {
-			var user = sessionStorage.getItem('user');
+			var user = localStorage.getItem('user');
 			if (user) {
 				user = JSON.parse(user);
 				this.sysUserName = user.userName || '';

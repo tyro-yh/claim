@@ -29,7 +29,7 @@ const routes = [
 		iconCls: 'el-icon-s-home',//图标样式class
 		component: Home,
 		children: [
-			{ 
+			{
 				path: "/main",
 				name: "Main",
 				meta: {
@@ -37,7 +37,7 @@ const routes = [
 					title: "主页"
 				},
 				iconCls: 'el-icon-s-home',
-				component: () => import(/* webpackChunkName: "about" */ '@/views/common/Main.vue') 
+				component: () => import(/* webpackChunkName: "about" */ '@/views/common/Main.vue')
 			},
 			{
 				path: "/user",
@@ -48,7 +48,7 @@ const routes = [
 				},
 				component: () => import(/* webpackChunkName: "about" */ '@/views/dictionary/User.vue')
 			},
-			{ 
+			{
 				path: "/company",
 				name: "Company",
 				meta: {
@@ -57,7 +57,7 @@ const routes = [
 				},
 				component: () => import(/* webpackChunkName: "about" */ '@/views/dictionary/Company.vue')
 			},
-			{ 
+			{
 				path: "/common",
 				name: "Common",
 				meta: {
@@ -66,7 +66,7 @@ const routes = [
 				},
 				component: () => import(/* webpackChunkName: "about" */ '@/views/dictionary/Common.vue')
 			},
-			{ 
+			{
 				path: "/reportEdit",
 				name: "ReportEdit",
 				meta: {
@@ -141,7 +141,7 @@ const routes = [
 				component: () => import(/* webpackChunkName: "about" */ '@/views/claim/CaseMain.vue')
 			},
 			{
-				path: "/cApprove/:businessKey/:reportNo",
+				path: "/cApprove/:businessKey/:reportNo/:handler",
 				name: "ClaimApprove",
 				meta: {
 					title: "立案审核"
@@ -150,7 +150,7 @@ const routes = [
 				component: () => import(/* webpackChunkName: "about" */ '@/views/claim/ClaimApprove.vue')
 			},
 			{
-				path: "/undwrt/:businessKey/:reportNo",
+				path: "/undwrt/:businessKey/:reportNo/:handler",
 				name: "Undwrt",
 				meta: {
 					title: "核赔"
@@ -172,14 +172,35 @@ const routes = [
 				component: () => import(/* webpackChunkName: "about" */ '@/views/claim/SettlementDetail.vue')
 			},
 			{
-				path: "/endCase/:businessKey/:reportNo",
+				path: "/endCase/:businessKey/:reportNo/:handler",
 				name: "EndCase",
 				meta: {
 					title: "结案审核"
 				},
 				props: true,
 				component: () => import(/* webpackChunkName: "about" */ '@/views/endCase/EndCase.vue')
-			}
+			},
+      {
+      	path: "/personDetail",
+      	name: "PersonDetail",
+      	meta: {
+      		title: "人伤跟踪"
+      	},
+      	props: route => ({
+      			reportNo: route.query.reportNo,
+      			personId: route.query.personId
+      		}),
+      	component: () => import(/* webpackChunkName: "about" */ '@/views/person/PersonDetail.vue')
+      },
+      {
+      	path: "/personApprove/:businessKey/:reportNo/:handler",
+      	name: "PersonApprove",
+      	meta: {
+      		title: "人伤跟踪审核"
+      	},
+      	props: true,
+      	component: () => import(/* webpackChunkName: "about" */ '@/views/person/PersonApprove.vue')
+      },
 		]
 	}
 ]
@@ -192,9 +213,9 @@ const router = new VueRouter({
 router.beforeEach((to, from, next) => {
   //NProgress.start();
   if (to.path == '/login') {
-    sessionStorage.removeItem('user');
+    localStorage.removeItem('user');
   }
-  let user = JSON.parse(sessionStorage.getItem('user'));
+  let user = JSON.parse(localStorage.getItem('user'));
   if (!user && to.path != '/login') {
     next({ name: 'Login' })
   } else {

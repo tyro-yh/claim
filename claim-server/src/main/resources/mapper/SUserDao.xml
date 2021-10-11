@@ -11,4 +11,12 @@
     <select id="selectByUserCode" parameterType="string" resultType="com.claim.server.common.po.SUser">
         select * from s_user where UserCode = #{userCode}
     </select>
+
+    <select id="getHandlerList" resultType="map" parameterType="string">
+        SELECT UserName AS 'value',UserCode AS 'label' FROM s_user WHERE ValidStatus = '1'
+        <if test="queryString != null" >
+            AND (UserName LIKE "%"#{queryString}"%" OR UserCode LIKE "%"#{queryString}"%")
+        </if>
+        limit 10
+    </select>
 </mapper>

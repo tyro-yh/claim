@@ -49,6 +49,9 @@ public class CommonUtil {
         } else if(taskType.startsWith("EndCase")) {
             String level = taskType.split("_")[1];
             taskTypeName = TaskTypeEnum.valueOf("EndCase").getName() + level + "级";
+        } else if(taskType.startsWith("PersonApprove")) {
+            String level = taskType.split("_")[1];
+            taskTypeName = TaskTypeEnum.valueOf("PersonApprove").getName() + level + "级";
         } else {
             taskTypeName = TaskTypeEnum.valueOf(taskType).getName();
         }
@@ -68,6 +71,8 @@ public class CommonUtil {
             taskTypeCode = TaskTypeEnum.valueOf("ClaimApprove").getCode();
         } else if(taskType.startsWith("EndCase")) {
             taskTypeCode = TaskTypeEnum.valueOf("EndCase").getCode();
+        } else if(taskType.startsWith("PersonApprove")) {
+            taskTypeCode = TaskTypeEnum.valueOf("PersonApprove").getCode();
         } else {
             taskTypeCode = TaskTypeEnum.valueOf(taskType).getCode();
         }
