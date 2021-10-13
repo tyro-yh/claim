@@ -105,7 +105,8 @@ public class SettlementApi {
         String reportNo = params.getString("reportNo");
         String settlementType = params.getString("settlementType");
         String settlementNo = params.getString("settlementNo");
-        Map map = settlementService.checkSettlementForSave(reportNo,settlementType,settlementNo);
+        String sumRealPay = params.getString("sumRealPay");
+        Map map = settlementService.checkSettlementForSave(reportNo,settlementType,settlementNo,sumRealPay);
         return new ApiResponse(map);
     }
 

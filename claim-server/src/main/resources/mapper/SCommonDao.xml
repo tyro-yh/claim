@@ -12,16 +12,28 @@
         SELECT DataCode AS 'value',DataName AS 'label' FROM s_common WHERE ValidStatus = '1' AND DataTypeCode = 'damage'
     </select>
 
-    <select id="getProvinceList" resultType="map">
+    <select id="getProvinceList" resultType="map" parameterType="string">
         SELECT DataName AS 'value',DataCode AS 'label' FROM s_common WHERE ValidStatus = '1' AND DataTypeCode = 'province'
+        <if test="queryString != null" >
+            AND DataName LIKE "%"#{queryString}"%"
+        </if>
+        limit 10
     </select>
 
     <select id="getCityList" resultType="map" parameterType="string">
         SELECT DataName AS 'value',DataCode AS 'label' FROM s_common WHERE ValidStatus = '1' AND DataTypeCode = 'city' AND PreCode = #{preCode}
+        <if test="queryString != null" >
+            AND DataName LIKE "%"#{queryString}"%"
+        </if>
+        limit 10
     </select>
 
     <select id="getCountyCodeList" resultType="map" parameterType="string">
         SELECT DataName AS 'value',DataCode AS 'label' FROM s_common WHERE ValidStatus = '1' AND DataTypeCode = 'countyCode' AND PreCode = #{preCode}
+        <if test="queryString != null" >
+            AND DataName LIKE "%"#{queryString}"%"
+        </if>
+        limit 10
     </select>
 
     <select id="getCertifyList" resultType="map">

@@ -166,7 +166,7 @@
 							<el-table :data="lossProp" v-loading="loading" highlight-current-row style="width: 100%;" border :cell-style="cellClass" :header-cell-style="headCellClass">
 								<el-table-column label="条款-险别" min-width="180">
 									<template slot-scope="scope">
-										<el-select v-model="scope.row.clauseCode" :disabled="settlementStatus">
+										<el-select v-model="scope.row.clauseCode" @change="eventClause(scope.row)" :disabled="settlementStatus">
 											<el-option
 											  v-for="item in claimKindP"
 											  :key="item.clauseCode"
@@ -1005,6 +1005,22 @@
 					}
 				})
 			},
+      eventClause(row) {
+        let clauseCode = row.clauseCode;
+        this.claimKindP.forEach(item => {
+        	if(item.clauseCode == clauseCode) {
+            row.itemCode = item.itemCode;
+            row.amount = item.amount;
+      			row.deductAddRate = item.deductAddRate;
+      			row.deductAddAmt = item.deductAddAmt;
+      			row.clauseName = item.clauseName;
+      			row.itemName = item.itemName;
+            row.sumLoss = item.sumEstiPaid;
+            row.sumLossChecked = item.sumEstiPaid;
+        		return;
+        	}
+        });
+      },
 			eventItem(row) {
 				let itemCode = row.itemCode;
 				let clauseCode = row.clauseCode;
@@ -1138,10 +1154,16 @@
           };
           this.loading = true;
           initSettlementContent(params).then((res) => {
-          	this.form = res.data.data.settlementMain;
-          	this.lossProp = res.data.data.lossProps;
-          	this.lossCharge = res.data.data.lossCharges;
-            this.lossPerson = res.data.data.lossPersonList;
+            if(res.data.data.settlementMain.sumRealPay < 0) {
+              this.$message.warning('首次理赔金额不能小于预赔金额（'+res.data.data.settlementMain.sumPreAmt+'）');
+              this.form.content = '';
+              this.form.sumRealPay = '';
+            } else {
+              this.form = res.data.data.settlementMain;
+              this.lossProp = res.data.data.lossProps;
+              this.lossCharge = res.data.data.lossCharges;
+              this.lossPerson = res.data.data.lossPersonList;
+            }
           	setTimeout(() => {
           		this.loading = false;
           	},500);
@@ -1298,7 +1320,8 @@
         let params1 = {
         	reportNo:this.reportNo,
         	settlementType: this.settlementType,
-        	settlementNo: this.form.settlementNo
+        	settlementNo: this.form.settlementNo,
+          sumRealPay: this.form.sumRealPay
         }
         checkSettlementForSave(params1).then(res => {
           if(res.data.data.status == '0') {
@@ -1315,8 +1338,16 @@
               saveSettlement(params).then((res) => {
               	if(res) {
               		this.$message.success("保存成功");
-              		this.settlementNo = this.form.settlementNo;
-              		this.getSettlement();
+                  if(!this.settlementNo) {
+                    this.$router.push({name:'SettlementDetail',query:{
+                      reportNo:this.reportNo,
+                      settlementNo:this.form.settlementNo,
+                      settlementType: this.settlementType
+                    }})
+                  } else {
+                    this.settlementNo = this.form.settlementNo;
+                    this.getSettlement();
+                  }
               	}
               });
             }
@@ -1331,7 +1362,8 @@
         let params1 = {
         	reportNo:this.reportNo,
         	settlementType: this.settlementType,
-        	settlementNo: this.form.settlementNo
+        	settlementNo: this.form.settlementNo,
+          sumRealPay: this.form.sumRealPay
         }
         checkSettlementForSave(params1).then(res => {
           if(res.data.data.status == '0') {
@@ -1352,8 +1384,16 @@
               		submitSettlement(params).then((res2) => {
               			if(res2) {
               				this.$message.success("提交成功");
-              				this.settlementNo = this.form.settlementNo;
-              				this.getSettlement();
+              				if(!this.settlementNo) {
+              				  this.$router.push({name:'SettlementDetail',query:{
+              				    reportNo:this.reportNo,
+              				    settlementNo:this.form.settlementNo,
+              				    settlementType: this.settlementType
+              				  }})
+              				} else {
+              				  this.settlementNo = this.form.settlementNo;
+              				  this.getSettlement();
+              				}
               			}
               		});
               	}
@@ -1522,7 +1562,7 @@
 					if(isNaN(sumPaid)) {
 						this.$message.warning('财产/人伤损失赔付金额不能为空');
 						return false;
-					} else if(sumPaid != this.form.sumRealPay) {
+					} else if(sumPaid != this.form.sumRealPay + this.form.sumPreAmt) {
 						this.$message.warning('财产/人伤损失不等于总金额');
 						return false;
 					}

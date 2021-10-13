@@ -14,4 +14,6 @@ public interface BSettlementMainDao extends BaseMapper<BSettlementMain> {
     List<BSettlementMain> selectByReportNo(@Param(value = "reportNo") String reportNo);
 
     BigDecimal getSumHasPaid(@Param(value = "reportNo") String reportNo);
+
+    List<BSettlementMain> selectUndwrtSettlement(@Param(value = "reportNo") String reportNo,@Param(value = "settlementType") String settlementType);
 }

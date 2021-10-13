@@ -168,20 +168,25 @@ public class DictApi {
     }
 
     @RequestMapping(value = "/getProvinceList",method = RequestMethod.POST)
-    public ApiResponse getProvinceList() {
-        List<Map> list = sCommonDao.getProvinceList();
+    public ApiResponse getProvinceList(@RequestBody JSONObject params) {
+        String queryString = params.getString("queryString");
+        List<Map> list = sCommonDao.getProvinceList(queryString);
         return new ApiResponse(list);
     }
 
     @RequestMapping(value = "/getCityList",method = RequestMethod.POST)
     public ApiResponse getCityList(@RequestBody JSONObject params) {
-        List<Map> list = sCommonDao.getCityList(params.getString("preCode"));
+        String preCode = params.getString("preCode");
+        String queryString = params.getString("queryString");
+        List<Map> list = sCommonDao.getCityList(preCode,queryString);
         return new ApiResponse(list);
     }
 
     @RequestMapping(value = "/getCountyCodeList",method = RequestMethod.POST)
     public ApiResponse getCountyCodeList(@RequestBody JSONObject params) {
-        List<Map> list = sCommonDao.getCountyCodeList(params.getString("preCode"));
+        String preCode = params.getString("preCode");
+        String queryString = params.getString("queryString");
+        List<Map> list = sCommonDao.getCountyCodeList(preCode,queryString);
         return new ApiResponse(list);
     }
 

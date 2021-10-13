@@ -5,7 +5,7 @@
 <!-- ============================================================== -->
 <mapper namespace="com.claim.server.settlement.dao.BSettlementMainDao">
     <select id="selectBySettlementType" parameterType="string" resultType="com.claim.server.settlement.po.BSettlementMain">
-        SELECT * FROM b_settlement_main WHERE ReportNo = #{reportNo} AND SettlementType = #{settlementType};
+        SELECT * FROM b_settlement_main WHERE ReportNo = #{reportNo} AND SettlementType = #{settlementType}
     </select>
 
     <select id="selectByReportNo" parameterType="string" resultType="com.claim.server.settlement.po.BSettlementMain">
@@ -14,5 +14,9 @@
 
     <select id="getSumHasPaid" parameterType="string" resultType="java.math.BigDecimal">
         SELECT COALESCE(SUM(SumRealPay),0) FROM b_settlement_main WHERE ReportNo = #{reportNo} AND UnderwriteFlag = '2' AND SettlementType != 'F'
+    </select>
+
+    <select id="selectUndwrtSettlement" parameterType="string" resultType="com.claim.server.settlement.po.BSettlementMain">
+        SELECT * FROM b_settlement_main WHERE ReportNo = #{reportNo} AND SettlementType = #{settlementType} AND UnderwriteFlag = '2'
     </select>
 </mapper>

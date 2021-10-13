@@ -280,9 +280,6 @@
             ],
         },
 				damageOptions: [],
-				provinceRestaurants: [],
-				cityRestaurants: [],
-				countyCodeRestaurants: [],
 				tableData: []
 			}
 		},
@@ -343,62 +340,45 @@
 				});
 			},
 			queryProvince(queryString, cb) {
-				let restaurants = this.provinceRestaurants;
-				let results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
-				// 调用 callback 返回建议列表的数据
-				cb(results);
+        let params = {
+          queryString: queryString
+        }
+        getProvinceList(params).then(res => {
+          let restaurants = res.data.data;
+          cb(restaurants);
+        })
 			},
 			queryCity(queryString, cb) {
-				let restaurants = this.cityRestaurants;
-				let results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
-				// 调用 callback 返回建议列表的数据
-				cb(results);
+       let params = {
+        	preCode: this.form.province,
+          queryString: queryString
+        };
+        getCityList(params).then((res) => {
+          let restaurants = res.data.data;
+          cb(restaurants);
+        });
 			},
 			queryCountyCode(queryString, cb) {
-				let restaurants = this.countyCodeRestaurants;
-				let results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
-				// 调用 callback 返回建议列表的数据
-				cb(results);
-			},
-			createFilter(queryString) {
-				return (restaurant) => {
-				  return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
-				};
+        let params = {
+        	preCode: this.form.city,
+          queryString: queryString
+        };
+        getCountyCodeList(params).then((res) => {
+        	let restaurants = res.data.data;
+        	cb(restaurants);
+        });
 			},
 			selectProvince(item) {
 				this.form.province = item.label;
 				this.provinceName = item.value;
-				this.getCity(this.form.province);
 			},
 			selectCity(item) {
 				this.form.city = item.label;
 				this.cityName = item.value;
-				this.getCountyCode(this.form.city);
 			},
 			selectCountyCode(item) {
 				this.form.countyCode = item.label;
 				this.countyCodeName = item.value;
-			},
-			getProvince() {
-				getProvinceList().then((res) => {
-					this.provinceRestaurants = res.data.data;
-				});
-			},
-			getCity(preCode) {
-				let params = {
-					preCode: preCode
-				};
-				getCityList(params).then((res) => {
-					this.cityRestaurants = res.data.data;
-				});
-			},
-			getCountyCode(preCode) {
-				let params = {
-					preCode: preCode
-				};
-				getCountyCodeList(params).then((res) => {
-					this.countyCodeRestaurants = res.data.data;
-				});
 			},
 			getDamageOptions() {
 				getDamageCodes().then((res) => {
@@ -438,7 +418,6 @@
 		},
 		mounted() {
 			this.getDamageOptions();
-			this.getProvince();
 		}
 	}
 </script>

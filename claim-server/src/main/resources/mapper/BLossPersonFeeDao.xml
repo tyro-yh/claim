@@ -10,7 +10,7 @@
 
     <select id="getSumHasPaid" parameterType="string" resultType="java.math.BigDecimal">
         SELECT COALESCE(SUM(SumRealPay),0) FROM b_loss_person_fee WHERE SettlementNo IN (
-          SELECT SettlementNo FROM b_settlement_main WHERE ReportNo = #{reportNo} AND UnderwriteFlag = '2' AND SettlementType != 'F'
+          SELECT SettlementNo FROM b_settlement_main WHERE ReportNo = #{reportNo} AND UnderwriteFlag = '2' AND SettlementType = 'P'
           )
           AND ClauseCode = #{clauseCode} AND ItemCode = #{itemCode}
     </select>

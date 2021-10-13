@@ -52,7 +52,7 @@ export const getCommonDataType = params => { return axios.post(`${base}/dictiona
 
 export const getDamageCodes = params => { return axios.post(`${base}/dictionary/getDamageCodes`); };
 
-export const getProvinceList = params => { return axios.post(`${base}/dictionary/getProvinceList`); };
+export const getProvinceList = params => { return axios.post(`${base}/dictionary/getProvinceList`, params); };
 
 export const getCityList = params => { return axios.post(`${base}/dictionary/getCityList`, params); };
 

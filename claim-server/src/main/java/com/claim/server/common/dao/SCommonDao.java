@@ -13,11 +13,11 @@ public interface SCommonDao extends BaseMapper<SCommon> {
 
     List<Map> getDamageCodes();
 
-    List<Map> getProvinceList();
+    List<Map> getProvinceList(@Param(value = "queryString") String queryString);
 
-    List<Map> getCityList(@Param(value = "preCode") String preCode);
+    List<Map> getCityList(@Param(value = "preCode") String preCode,@Param(value = "queryString") String queryString);
 
-    List<Map> getCountyCodeList(@Param(value = "preCode") String preCode);
+    List<Map> getCountyCodeList(@Param(value = "preCode") String preCode,@Param(value = "queryString") String queryString);
 
     List<Map> getCertifyList();
 

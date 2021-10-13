@@ -210,8 +210,21 @@ public class SettlementServiceImpl implements SettlementService {
 
             content.append("本次赔付总额：理算金额为 "+sumls+" 赔付金额为 "+sumpf);
             settlementMain.setSumAmt(sumls);
-            //todo 预赔扣除逻辑
-            settlementMain.setSumPreAmt(BigDecimal.ZERO);
+            BigDecimal preAmt = BigDecimal.ZERO;
+            //预赔扣除逻辑
+            if ("P".equals(settlementMain.getSettlementType())) {
+                List<BSettlementMain> ySettlement = bSettlementMainDao.selectUndwrtSettlement(settlementMain.getReportNo(),SettlementTypeEnum.Y.getCode());
+                List<BSettlementMain> pSettlement = bSettlementMainDao.selectUndwrtSettlement(settlementMain.getReportNo(),SettlementTypeEnum.P.getCode());
+                //第一笔实赔且有审核通过的预赔
+                if ((pSettlement == null || pSettlement.size() == 0) && (ySettlement != null && ySettlement.size() > 0)) {
+                    preAmt = ySettlement.get(0).getSumRealPay();
+                    settlementMain.setSumPreAmt(preAmt);
+                    sumpf = sumpf.subtract(preAmt);
+                    content.append("\n\n首次实赔扣除预赔：预赔金额为 "+preAmt);
+                }
+            }
+
+            settlementMain.setSumPreAmt(preAmt);
             settlementMain.setSumPaidAmt(sumls);
             settlementMain.setSumRealPay(sumpf);
             settlementMain.setPayStatus("0");
@@ -489,7 +502,7 @@ public class SettlementServiceImpl implements SettlementService {
     }
 
     @Override
-    public Map checkSettlementForSave(String reportNo,String settlementType,String settlementNo) {
+    public Map checkSettlementForSave(String reportNo,String settlementType,String settlementNo,String sumRealPay) {
         Map map = new HashMap();
         map.put("status","1");
         if (SettlementTypeEnum.Y.getCode().equals(settlementType)) {
@@ -517,6 +530,14 @@ public class SettlementServiceImpl implements SettlementService {
                     }
                     return map;
                 }
+            }
+
+            BClaimMain claimMain = bClaimMainDao.selectByReportNo(reportNo);
+            BigDecimal sumDefloss = claimMain.getSumDefloss().divide(new BigDecimal(2));
+            if (new BigDecimal(sumRealPay).compareTo(sumDefloss) > 0) {
+                map.put("status","0");
+                map.put("msg","预赔超50%立案限额，请重新理算");
+                return map;
             }
         }
 
