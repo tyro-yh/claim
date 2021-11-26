@@ -23,7 +23,7 @@
 			
 			<!--列表-->
 			<el-table :data="tableData" highlight-current-row v-loading="loading" style="width: 100%;" border :cell-style="cellClass" :header-cell-style="headCellClass">
-				<el-table-column prop="process.processType" label="流程类型" width="100" :formatter="formatType">
+				<el-table-column prop="process.processType" label="流程类型" width="120" :formatter="formatType">
 				</el-table-column>
 				<el-table-column prop="process.title" label="流程标题" min-width="120">
 				</el-table-column>

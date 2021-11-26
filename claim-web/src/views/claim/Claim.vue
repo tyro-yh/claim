@@ -281,10 +281,10 @@
         	if(item.clauseCode == clauseCode) {
             row.itemCode = item.itemList[0].itemCode;
             row.amount = item.itemList[0].amount;
-						row.deductAddRate = item2.itemList[0].deductAddRate;
-						row.deductAddAmt = item2.itemList[0].deductAddAmt;
-						row.clauseName = item2.itemList[0].clauseName;
-						row.itemName = item2.itemList[0].itemName;
+						row.deductAddRate = item.itemList[0].deductAddRate;
+						row.deductAddAmt = item.itemList[0].deductAddAmt;
+						row.clauseName = item.itemList[0].clauseName;
+						row.itemName = item.itemList[0].itemName;
         		return;
         	}
         });

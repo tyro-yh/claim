@@ -8,11 +8,16 @@
 }
 
 .navigation .bar {
+  margin-top: 2px;
 	height: 30px;
 	line-height: 30px;
 	border: none;
 	border-radius: 3px;
 	background-color: #409EFF;
+}
+
+.navigation .bar:hover {
+	background-color: rgb(121, 187, 255);
 }
 
 .navigation .bar-icon {

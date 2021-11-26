@@ -50,6 +50,30 @@
 					<span @click="endCase()">申请结案</span>
 				</div>
 			</div>
+      <div class="bar">
+      	<div class="bar-icon">
+      		<i class="el-icon-document-delete"></i>
+      	</div>
+      	<div class="bar-text" align="left">
+      		<span @click="cancelCase()">申请注销</span>
+      	</div>
+      </div>
+      <div class="bar">
+      	<div class="bar-icon">
+      		<i class="el-icon-document-remove"></i>
+      	</div>
+      	<div class="bar-text" align="left">
+      		<span @click="rejectCase()">申请拒赔</span>
+      	</div>
+      </div>
+      <div class="bar">
+      	<div class="bar-icon">
+      		<i class="el-icon-document-add"></i>
+      	</div>
+      	<div class="bar-text" align="left">
+      		<span @click="reCase()">申请重开</span>
+      	</div>
+      </div>
 		</div>
 	</section>
 </template>
@@ -148,6 +172,42 @@
 					this.$message.warning("该案件已结案");
 				}
 			},
+      /* cancelCase() {
+        let params = {
+        	reportNo: this.reportNo
+        }
+        applyCancelCase(params).then((res) => {
+        	if(res.data.data.status == '0') {
+        		this.$message.warning(res.data.data.msg);
+        	} else {
+        		this.$message.success('提交成功');
+        	}
+        })
+      },
+      rejectCase() {
+        let params = {
+        	reportNo: this.reportNo
+        }
+        applyRejectCase(params).then((res) => {
+        	if(res.data.data.status == '0') {
+        		this.$message.warning(res.data.data.msg);
+        	} else {
+        		this.$message.success('提交成功');
+        	}
+        })
+      },
+      reCase() {
+        let params = {
+        	reportNo: this.reportNo
+        }
+        applyReCase(params).then((res) => {
+        	if(res.data.data.status == '0') {
+        		this.$message.warning(res.data.data.msg);
+        	} else {
+        		this.$message.success('提交成功');
+        	}
+        })
+      }, */
 			getCaseFlag() {
 				let params = {
 					reportNo: this.reportNo

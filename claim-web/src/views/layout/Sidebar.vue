@@ -14,7 +14,7 @@
 						<span slot="title">{{child.meta.title}}</span>
 					</el-menu-item>
 				</el-submenu>
-				<el-menu-item :index="item.path" :key="item.meta.title" v-if="!item.children">
+				<el-menu-item :index="item.path" :key="item.meta.title" v-if="!item.children || item.children.length == 0">
 					<i :class="item.iconCls"></i>
 					<span slot="title">{{item.meta.title}}</span>
 				</el-menu-item>
@@ -24,10 +24,12 @@
 </template>
 
 <script>
+  import { getMenuList } from '@/api/api';
 	export default {
 		data() {
 			return {
-				menuList: [
+        menuList: []
+				/* menuList: [
 					{
 						path: "/main",
 						name: "Main",
@@ -54,7 +56,7 @@
 									title: "员工中心"
 								}
 							},
-							{ 
+							{
 								path: "/company",
 								name: "Company",
 								meta: {
@@ -62,7 +64,7 @@
 									title: "组织架构"
 								}
 							},
-							{ 
+							{
 								path: "/common",
 								name: "Common",
 								meta: {
@@ -108,6 +110,15 @@
 						},
 						iconCls: 'el-icon-share'
 					},
+          {
+          	path: "/gradeManage",
+          	name: "GradeManage",
+          	meta: {
+          		closable: false,
+          		title: "岗位管理"
+          	},
+          	iconCls: 'el-icon-share'
+          },
 					{
 						path: "/analysis",
 						name: "Analysis",
@@ -117,7 +128,7 @@
 						},
 						iconCls: 'el-icon-s-data'
 					}
-				]
+				] */
 			}
 		},
 		computed: {
@@ -126,8 +137,14 @@
 			}
 		},
 		methods: {
+      getMenu() {
+        getMenuList().then(res => {
+          this.menuList = res.data.data;
+        })
+      }
 		},
 		mounted() {
+      this.getMenu();
 		}
 	}
 </script>
@@ -139,11 +156,11 @@
 	    left: 0;
 		height: 100%;
 	}
-	
+
 	.el-menu-vertical-demo:not(.el-menu--collapse) {
 	    width: 200px;
 	}
-	
+
 	.el-menu--collapse {
 	    width: 65px;
 	}

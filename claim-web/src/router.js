@@ -93,6 +93,15 @@ const routes = [
 				},
 				component: () => import(/* webpackChunkName: "about" */ '@/views/common/ProcessManage.vue')
 			},
+      {
+      	path: "/gradeManage",
+      	name: "GradeManage",
+      	meta: {
+      		closable: true,
+      		title: "岗位管理"
+      	},
+      	component: () => import(/* webpackChunkName: "about" */ '@/views/common/GradeManage.vue')
+      },
 			{
 				path: "/analysis",
 				name: "Analysis",

@@ -108,6 +108,12 @@ export const submitClaim = params => { return axios.post(`${base}/claim/submitCl
 
 export const applyEndCase = params => { return axios.post(`${base}/endcase/applyEndCase`, params); };
 
+export const applyCancelCase = params => { return axios.post(`${base}/endcase/applyCancelCase`, params); };
+
+export const applyRejectCase = params => { return axios.post(`${base}/endcase/applyRejectCase`, params); };
+
+export const applyReCase = params => { return axios.post(`${base}/endcase/applyReCase`, params); };
+
 export const initEndCaseInfo = params => { return axios.post(`${base}/endcase/initEndCaseInfo`, params); };
 
 export const saveProcess = params => { return axios.post(`${base}/process/saveProcess`, params); };
@@ -169,3 +175,17 @@ export const initPersonApproveInfo = params => { return axios.post(`${base}/pers
 export const savePerson = params => { return axios.post(`${base}/person/savePerson`, params); };
 
 export const submitPerson = params => { return axios.post(`${base}/person/submitPerson`, params); };
+
+export const getGradeList = params => { return axios.post(`${base}/grade/getGradeList`); };
+
+export const getUserGradeList = params => { return axios.post(`${base}/grade/getUserGradeList`, params); };
+
+export const addUserGrade = params => { return axios.post(`${base}/grade/addUserGrade`, params); };
+
+export const delUserGrade = params => { return axios.post(`${base}/grade/delUserGrade`, params); };
+
+export const initUserGrade = params => { return axios.post(`${base}/grade/initUserGrade`, params); };
+
+export const editUserGrade = params => { return axios.post(`${base}/grade/editUserGrade`, params); };
+
+export const getMenuList = params => { return axios.post(`${base}/menu/getMenuList`); };
